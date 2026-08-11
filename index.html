@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Signal Deck</title>
+<meta name="theme-color" content="#14161b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Signal Deck">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314161b'/%3E%3Crect x='22' y='60' width='12' height='22' rx='3' fill='%23ff7a45'/%3E%3Crect x='44' y='44' width='12' height='38' rx='3' fill='%234fd1c5'/%3E%3Crect x='66' y='28' width='12' height='54' rx='3' fill='%239f7aea'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314161b'/%3E%3Crect x='22' y='60' width='12' height='22' rx='3' fill='%23ff7a45'/%3E%3Crect x='44' y='44' width='12' height='38' rx='3' fill='%234fd1c5'/%3E%3Crect x='66' y='28' width='12' height='54' rx='3' fill='%239f7aea'/%3E%3C/svg%3E">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Signal%20Deck%22%2C%22short_name%22%3A%22Signal%20Deck%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2314161b%22%2C%22theme_color%22%3A%22%2314161b%22%7D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14161b;
+    --panel:#1b1e25;
+    --panel-2:#20242c;
+    --line:#2b2f39;
+    --text:#e9e9ec;
+    --text-dim:#8b8f9c;
+    --signal:#ff7a45;
+    --calendar:#4fd1c5;
+    --email:#9f7aea;
+    --goal:#f2c14e;
+    --danger:#ff5c5c;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  ::selection{background:var(--signal);color:#1a1005}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+  ::-webkit-scrollbar-thumb:hover{background:#3a3f4c}
+  :focus-visible{outline:2px solid var(--signal);outline-offset:2px}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 90% -10%, #23283a55, transparent),
+      radial-gradient(900px 500px at 5% 100%, #1c2a3355, transparent),
+      var(--bg);
+    background-attachment:fixed;
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.disp{font-family:'Space Grotesk',sans-serif}
+  .mono{font-family:'JetBrains Mono',monospace}
+  header{
+    padding:28px 20px 18px;
+    border-bottom:1px solid var(--line);
+    position:sticky;top:0;
+    background:rgba(20,22,27,0.92);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    z-index:10;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    color:var(--signal);
+    text-transform:uppercase;
+    display:flex;align-items:center;gap:7px;
+  }
+  .eyebrow::before{
+    content:'';width:6px;height:6px;border-radius:50%;
+    background:var(--signal);
+    box-shadow:0 0 0 3px rgba(255,122,69,0.18);
+    animation:pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 3px rgba(255,122,69,0.18)}
+    50%{box-shadow:0 0 0 6px rgba(255,122,69,0.06)}
+  }
+  h1{
+    font-size:26px;margin:6px 0 4px;font-weight:700;letter-spacing:-0.01em;
+    background:linear-gradient(100deg,#fff,#c7c9d4 70%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .sub{color:var(--text-dim);font-size:13px;margin-bottom:16px;letter-spacing:0.01em}
+  .connect-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  button{
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    color:var(--text);
+    border-radius:8px;
+    padding:9px 14px;
+    font-size:13px;
+    font-weight:500;
+    transition:border-color .15s, transform .1s, background .15s, box-shadow .15s;
+  }
+  button:hover{border-color:#454b5a}
+  button:active{transform:scale(0.96)}
+  button.primary{background:var(--signal);color:#1a1005;border-color:var(--signal);font-weight:600;box-shadow:0 2px 14px rgba(255,122,69,0.25)}
+  button.primary:hover{box-shadow:0 2px 20px rgba(255,122,69,0.4)}
+  button.cal{border-color:var(--calendar)}
+  button.cal.on{background:var(--calendar);color:#0a2422;box-shadow:0 2px 14px rgba(79,209,197,0.25)}
+  button.eml{border-color:var(--email)}
+  button.eml.on{background:var(--email);color:#1c1030;box-shadow:0 2px 14px rgba(159,122,234,0.25)}
+  button:disabled{opacity:0.5;cursor:default;transform:none}
+  .status{font-size:12px;color:var(--text-dim);margin-left:4px;transition:color .2s}
+  main{max-width:1180px;margin:0 auto;padding:20px;display:grid;grid-template-columns:264px 1fr;gap:20px;align-items:start}
+  @media(max-width:820px){main{grid-template-columns:1fr}}
+  .panel{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;
+    position:sticky;top:140px;
+  }
+  @media(max-width:820px){.panel{position:static}}
+  .goal-row{
+    display:flex;flex-direction:column;gap:6px;
+    padding:11px 0;border-bottom:1px solid var(--line);
+    transition:padding .15s;
+  }
+  .goal-row:last-child{border-bottom:none}
+  .goal-name{font-size:13.5px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .goal-name>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;min-width:0}
+  .goal-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:7px;flex-shrink:0;box-shadow:0 0 6px currentColor}
+  .goal-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);flex-shrink:0}
+  input[type=range]{
+    width:100%;accent-color:var(--goal);height:4px;cursor:pointer;
+  }
+  .imp-label{font-size:10.5px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;letter-spacing:0.03em}
+  .add-goal{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+  input[type=text],select,input[type=date],input[type=time]{
+    background:var(--panel-2);border:1px solid var(--line);color:var(--text);
+    border-radius:7px;padding:8px 10px;font-size:13px;font-family:'Inter',sans-serif;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input[type=text]:focus,select:focus,input[type=date]:focus,input[type=time]:focus{
+    border-color:var(--signal);box-shadow:0 0 0 3px rgba(255,122,69,0.12);outline:none;
+  }
+  #remindPanel{display:flex}
+  button#remindBtn.on{background:var(--goal);color:#1c1400;border-color:var(--goal);box-shadow:0 2px 14px rgba(242,193,78,0.25)}
+  select{cursor:pointer}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+  .add-todo{
+    display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;background:var(--panel);
+    border:1px solid var(--line);border-radius:var(--radius);padding:14px;
+    transition:border-color .2s;
+  }
+  .add-todo:focus-within{border-color:#3a3f4c}
+  .add-todo input[type=text]{flex:2;min-width:180px}
+  .add-todo select{flex:1;min-width:120px}
+  .sort-toggle{display:flex;gap:6px;font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:3px}
+  .sort-toggle button{padding:6px 12px;font-size:12px;border:1px solid transparent;background:transparent;border-radius:6px}
+  .sort-toggle button.active{border-color:var(--line);color:var(--signal);background:var(--panel-2)}
+  .todo{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;
+    transition:border-color .18s, transform .12s, box-shadow .18s, opacity .25s;
+    animation:slideIn .25s ease;
+  }
+  @keyframes slideIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  .todo:hover{border-color:#383d49;box-shadow:0 4px 18px rgba(0,0,0,0.22)}
+  .todo.done{opacity:0.4}
+  .todo.done .todo-text{text-decoration:line-through}
+  .todo.top1{border-color:rgba(255,122,69,0.45);box-shadow:0 0 0 1px rgba(255,122,69,0.12),0 6px 22px rgba(255,122,69,0.08)}
+  .todo.overdue{border-color:rgba(255,92,92,0.4)}
+  .todo.overdue .due{color:var(--danger)}
+  .tag.today{color:var(--goal);border-color:var(--goal);background:rgba(242,193,78,0.1)}
+  .tag.overdue{color:var(--danger);border-color:var(--danger);background:rgba(255,92,92,0.1)}
+  .tag.daily{color:#5cb8ff;border-color:#5cb8ff;background:rgba(92,184,255,0.08)}
+  .check{
+    width:21px;height:21px;border-radius:6px;border:1.5px solid var(--line);
+    flex-shrink:0;cursor:pointer;margin-top:2px;display:flex;align-items:center;justify-content:center;
+    font-size:13px;color:#0e0f13;transition:all .15s;
+  }
+  .check:hover{border-color:var(--signal)}
+  .todo.done .check{background:var(--signal);border-color:var(--signal)}
+  .todo-main{flex:1;min-width:0}
+  .todo-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .todo-text{font-size:14.5px;font-weight:500;line-height:1.4}
+  .rank-badge{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);white-space:nowrap;
+    padding:3px 8px;background:var(--panel-2);border-radius:6px;border:1px solid var(--line);
+  }
+  .tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+  .tag{font-size:10.5px;padding:3px 9px;border-radius:20px;font-family:'JetBrains Mono',monospace;letter-spacing:0.02em;border:1px solid var(--line)}
+  .tag.cat{color:var(--text-dim)}
+  .tag.linked-cal{color:var(--calendar);border-color:var(--calendar);background:rgba(79,209,197,0.08)}
+  .tag.linked-email{color:var(--email);border-color:var(--email);background:rgba(159,122,234,0.08)}
+  .due{font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:4px}
+  .due input{background:transparent;border:none;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;padding:0;width:100px}
+  .due input:hover{color:var(--text)}
+  .bar{display:flex;height:5px;border-radius:4px;overflow:hidden;margin-top:10px;background:#0d0e12}
+  .seg{height:100%;transition:width .3s ease}
+  .del{background:none;border:none;color:var(--text-dim);font-size:17px;cursor:pointer;padding:0 4px;border-radius:5px;transition:color .15s, background .15s;line-height:1}
+  .del:hover{color:var(--danger);background:rgba(255,92,92,0.1)}
+  .empty{color:var(--text-dim);font-size:13px;text-align:center;padding:40px 0}
+  .empty::before{content:'◇';display:block;font-size:22px;margin-bottom:8px;color:var(--line)}
+  .legend{display:flex;gap:14px;font-size:11px;color:var(--text-dim);flex-wrap:wrap;margin-top:14px}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Signal Deck // priority engine</div>
+  <h1>Everything, ranked by what actually matters</h1>
+  <div class="sub">Score = goal weight × urgency × calendar proximity × inbox pressure — overdue tasks keep climbing the longer they're late</div>
+  <div class="connect-row">
+    <button id="calBtn" class="cal">📅 Connect calendar</button>
+    <button id="emlBtn" class="eml">✉️ Connect email</button>
+    <button id="installBtn">⬇ Install app</button>
+    <button id="remindBtn">🔔 Daily reminders: off</button>
+    <span class="status" id="statusText">Not synced yet</span>
+  </div>
+  <div id="installHint" style="display:none;font-size:12px;color:var(--text-dim);margin-top:8px;max-width:520px;line-height:1.5"></div>
+  <div id="remindPanel" style="display:none;margin-top:10px;align-items:center;gap:8px;flex-wrap:wrap">
+    <span style="font-size:12px;color:var(--text-dim)">Remind me daily at</span>
+    <input type="time" id="remindTime" value="09:00">
+    <button id="testRemindBtn" style="font-size:12px;padding:6px 10px">Send test notification</button>
+    <span style="font-size:11.5px;color:var(--text-dim)">Only fires while this tab/app is open</span>
+  </div>
+</header>
+
+<main>
+  <div class="panel" id="goalsPanel">
+    <h3 style="margin:0 0 4px;font-size:14px">Goals</h3>
+    <div class="sub" style="margin-bottom:6px">Drag weight to reprioritize everything below</div>
+    <div id="goalList"></div>
+    <div class="add-goal">
+      <input type="text" id="newGoalName" placeholder="New goal name">
+      <button id="addGoalBtn">+ Add goal</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="toolbar">
+      <div class="sort-toggle" id="sortToggle">
+        <button data-sort="score" class="active">Score</button>
+        <button data-sort="due">Due date</button>
+        <button data-sort="goal">Goal</button>
+      </div>
+      <div class="sub" id="countText" style="margin:0"></div>
+    </div>
+
+    <div class="add-todo">
+      <input type="text" id="newTodoText" placeholder="Add a task…">
+      <select id="newTodoGoal"></select>
+      <input type="date" id="newTodoDue">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-dim);white-space:nowrap;padding:0 4px">
+        <input type="checkbox" id="newTodoDaily" style="width:15px;height:15px;accent-color:var(--calendar);cursor:pointer">
+        Repeat daily
+      </label>
+      <button class="primary" id="addTodoBtn">Add</button>
+    </div>
+
+    <div id="todoList"></div>
+    <div class="legend">
+      <span><i style="background:var(--goal)"></i>goal weight</span>
+      <span><i style="background:var(--signal)"></i>urgency</span>
+      <span><i style="background:var(--calendar)"></i>on calendar</span>
+      <span><i style="background:var(--email)"></i>in inbox</span>
+    </div>
+  </div>
+</main>
+
+<script>
+const GOAL_COLORS = ['#ff7a45','#4fd1c5','#9f7aea','#f2c14e','#5cb8ff','#ff5c8a','#7ee787','#e0a458'];
+
+let state = {
+  goals: [
+    {id:'g1', name:'Deploy project to Railway', importance:5},
+    {id:'g3', name:'Freelance profiles', importance:5},
+    {id:'g2', name:'Portfolio & resume', importance:4},
+    {id:'g4', name:'Build the game (PC/mobile)', importance:3},
+    {id:'g5', name:'Learn MCP', importance:2},
+    {id:'g6', name:'Reading', importance:2},
+  ],
+  todos: [
+    {id:'t1', text:'Deploy freelance projects to Railway', goalId:'g1', category:'Deployment', due:null, done:false, cal:true, email:false, daily:true},
+    {id:'t3', text:'Update resume', goalId:'g2', category:'Resume', due:null, done:false, cal:true, email:false, daily:true},
+    {id:'t2', text:'Update portfolio site', goalId:'g2', category:'Portfolio', due:null, done:false, cal:true, email:false, daily:true},
+    {id:'t4', text:'Make profiles on freelance sites', goalId:'g3', category:'Freelance', due:null, done:false, cal:true, email:false, daily:true},
+    {id:'t6', text:'Learn MCP', goalId:'g5', category:'Learning', due:null, done:false, cal:true, email:false, daily:true},
+    {id:'t5', text:'Build the game', goalId:'g4', category:'Game dev', due:null, done:false, cal:true, email:false, daily:true},
+    {id:'t7', text:'Reading', goalId:'g6', category:'Reading', due:null, done:false, cal:true, email:false, daily:true},
+  ],
+  sort:'score',
+  synced:{cal:false, email:false}
+};
+
+let saveTimer;
+let storageWorking = true;
+let warnedOnce = false;
+
+// API mode: when served over http(s) with serve.ps1 running, task data lives
+// in a shared tasks.json on the PC so PC and phone see the same list.
+// Falls back to per-device localStorage when opened as a plain file (file://)
+// or if the API isn't reachable.
+let apiMode = false;
+let pendingSave = false;
+
+function localSave(){
+  try{
+    localStorage.setItem('signal-deck-data', JSON.stringify(state));
+    storageWorking = true;
+  }catch(e){
+    console.error('save failed', e);
+    storageWorking = false;
+    if(!warnedOnce){
+      warnedOnce = true;
+      setStatus('Changes aren\'t saving right now — this session will reset on reload');
+    }
+  }
+}
+
+async function trySave(){
+  if(apiMode){
+    pendingSave = true;
+    try{
+      await fetch('/api/state', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(state)
+      });
+      storageWorking = true;
+    }catch(e){
+      console.error('api save failed, falling back to local', e);
+      apiMode = false;
+      localSave();
+    }finally{
+      pendingSave = false;
+    }
+    return;
+  }
+  localSave();
+}
+
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(trySave, 400);
+}
+
+async function loadState(){
+  try{
+    const r = await fetch('/api/state', {cache:'no-store'});
+    if(r.ok){
+      const parsed = await r.json();
+      apiMode = true;
+      if(parsed && parsed.goals && parsed.todos){
+        state = {...state, ...parsed};
+      } else {
+        // Server has nothing yet — seed it with current defaults.
+        await trySave();
+      }
+      startSyncPolling();
+    }
+  }catch(e){
+    apiMode = false; // opened via file://, or no server running
+  }
+
+  if(!apiMode){
+    try{
+      const raw = localStorage.getItem('signal-deck-data');
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(parsed.goals && parsed.todos) state = {...state, ...parsed};
+      }
+    }catch(e){ /* no saved data yet, use defaults */ }
+  }
+  render();
+}
+
+function startSyncPolling(){
+  setInterval(async ()=>{
+    if(pendingSave) return; // don't clobber an in-flight local edit
+    try{
+      const r = await fetch('/api/state', {cache:'no-store'});
+      if(!r.ok) return;
+      const parsed = await r.json();
+      if(parsed && parsed.goals && parsed.todos){
+        const incoming = JSON.stringify(parsed);
+        const current = JSON.stringify(state);
+        if(incoming !== current){
+          state = {...state, ...parsed};
+          render();
+        }
+      }
+    }catch(e){ /* transient network hiccup — try again next tick */ }
+  }, 5000);
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'visible') pollOnce();
+  });
+}
+
+async function pollOnce(){
+  if(!apiMode || pendingSave) return;
+  try{
+    const r = await fetch('/api/state', {cache:'no-store'});
+    if(!r.ok) return;
+    const parsed = await r.json();
+    if(parsed && parsed.goals && parsed.todos){
+      state = {...state, ...parsed};
+      render();
+    }
+  }catch(e){ /* ignore */ }
+}
+
+function goalColor(goalId){
+  const idx = state.goals.findIndex(g=>g.id===goalId);
+  return GOAL_COLORS[idx % GOAL_COLORS.length] || '#666';
+}
+function goalById(id){ return state.goals.find(g=>g.id===id); }
+
+function urgencyFromDue(due){
+  if(!due) return 0.15;
+  const days = (new Date(due) - new Date()) / 86400000;
+  if(days < 0){
+    // Overdue: urgency keeps climbing the longer it's late, instead of
+    // capping flat at 1 — a task overdue by 2 weeks outranks one overdue by 1 day.
+    const daysLate = Math.abs(days);
+    return 1 + Math.min(daysLate, 20) * 0.06; // up to ~2.2x at 20+ days late
+  }
+  if(days <= 1) return 0.95;
+  if(days <= 3) return 0.75;
+  if(days <= 7) return 0.5;
+  if(days <= 14) return 0.3;
+  return 0.15;
+}
+
+function isOverdue(due){
+  if(!due) return false;
+  return (new Date(due) - new Date(new Date().toDateString())) < 0;
+}
+function isDueToday(due){
+  if(!due) return false;
+  return new Date(due).toDateString() === new Date().toDateString();
+}
+
+// ---- Daily recurring tasks ----
+// No fixed due date. Completion is tracked via lastDoneDate ("did you do it today?").
+// If it's not done for a day, that day counts toward a missed streak, and the
+// task's urgency climbs the longer it goes undone — same idea as overdue escalation,
+// just anchored to "today" instead of a calendar date.
+function todayStr(){ return new Date().toDateString(); }
+
+function isDoneToday(t){
+  return t.daily && t.lastDoneDate === todayStr();
+}
+
+function dailyDaysSince(t){
+  const ref = t.lastDoneDate || t.createdDate;
+  if(!ref) return 0;
+  const today = new Date(todayStr());
+  const refDate = new Date(new Date(ref).toDateString());
+  return Math.round((today - refDate) / 86400000);
+}
+
+function dailyMissedStreak(t){
+  // 0 or 1 day since it was last done = still on track for today.
+  // 2+ days = it's been skipped at least once.
+  return Math.max(0, dailyDaysSince(t) - 1);
+}
+
+function urgencyForDaily(t){
+  if(isDoneToday(t)) return 0.15;
+  const missed = dailyMissedStreak(t);
+  return 0.6 + Math.min(missed, 20) * 0.07; // climbs toward ~2.0 the longer it's skipped
+}
+
+function isTodoDone(t){
+  return t.daily ? isDoneToday(t) : !!t.done;
+}
+
+function urgencyOf(t){
+  return t.daily ? urgencyForDaily(t) : urgencyFromDue(t.due);
+}
+
+function scoreOf(todo){
+  const goal = goalById(todo.goalId);
+  const gw = goal ? goal.importance/5 : 0.4;
+  const urg = urgencyOf(todo);
+  const cal = todo.cal ? 1 : 0;
+  const eml = todo.email ? 1 : 0;
+  return gw*40 + urg*35 + cal*15 + eml*10;
+}
+
+function renderGoals(){
+  const list = document.getElementById('goalList');
+  list.innerHTML = '';
+  state.goals.forEach(g=>{
+    const count = state.todos.filter(t=>t.goalId===g.id && !isTodoDone(t)).length;
+    const row = document.createElement('div');
+    row.className = 'goal-row';
+    row.innerHTML = `
+      <div class="goal-name">
+        <span><span class="goal-dot" style="background:${goalColor(g.id)}"></span>${g.name}</span>
+        <span class="goal-count">${count} open</span>
+      </div>
+      <input type="range" min="1" max="5" value="${g.importance}" data-goal="${g.id}">
+      <div class="imp-label">IMPORTANCE ${g.importance}/5</div>
+    `;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('input[type=range]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const g = goalById(e.target.dataset.goal);
+      g.importance = parseInt(e.target.value);
+      scheduleSave();
+      render();
+    });
+  });
+
+  const sel = document.getElementById('newTodoGoal');
+  sel.innerHTML = state.goals.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+}
+
+function fmtDue(due){
+  if(!due) return null;
+  const days = Math.ceil((new Date(due) - new Date(new Date().toDateString())) / 86400000);
+  if(days < 0) return `${Math.abs(days)}d overdue`;
+  if(days === 0) return 'today';
+  if(days === 1) return 'tomorrow';
+  return `in ${days}d`;
+}
+
+function renderTodos(){
+  const list = document.getElementById('todoList');
+  const open = state.todos.filter(t=>!isTodoDone(t));
+  const overdueCount = open.filter(t=>!t.daily && isOverdue(t.due)).length;
+  const todayCount = open.filter(t=>!t.daily && isDueToday(t.due)).length;
+  const missedDailyCount = open.filter(t=>t.daily && dailyMissedStreak(t) > 0).length;
+  let countMsg = `${open.length} open · ${state.todos.length - open.length} done`;
+  if(overdueCount) countMsg += ` · ${overdueCount} overdue`;
+  if(todayCount) countMsg += ` · ${todayCount} due today`;
+  if(missedDailyCount) countMsg += ` · ${missedDailyCount} daily task(s) behind`;
+  document.getElementById('countText').textContent = countMsg;
+
+  let sorted = [...state.todos];
+  const doneRank = t => isTodoDone(t) ? 1 : 0;
+  if(state.sort === 'score'){
+    sorted.sort((a,b)=> (doneRank(a) - doneRank(b)) || (scoreOf(b)-scoreOf(a)));
+  } else if(state.sort === 'due'){
+    sorted.sort((a,b)=> (doneRank(a) - doneRank(b)) || ((a.due?new Date(a.due):Infinity) - (b.due?new Date(b.due):Infinity)));
+  } else {
+    sorted.sort((a,b)=> (doneRank(a) - doneRank(b)) || (goalById(a.goalId)?.name||'').localeCompare(goalById(b.goalId)?.name||''));
+  }
+
+  list.innerHTML = '';
+  if(sorted.length === 0){
+    list.innerHTML = '<div class="empty">Nothing here yet — add a task above.</div>';
+    return;
+  }
+
+  sorted.forEach((t, i)=>{
+    const goal = goalById(t.goalId);
+    const score = scoreOf(t);
+    const gw = goal ? goal.importance/5 : 0.4;
+    const urg = urgencyOf(t);
+    const total = gw*40 + urg*35 + (t.cal?15:0) + (t.email?10:0);
+    const dueLabel = t.daily ? null : fmtDue(t.due);
+    const done = isTodoDone(t);
+    const missed = t.daily ? dailyMissedStreak(t) : 0;
+
+    const openSorted = sorted.filter(x=>!isTodoDone(x));
+    const isTop1 = state.sort==='score' && !done && openSorted.indexOf(t) === 0;
+    const overdue = !done && !t.daily && isOverdue(t.due);
+    const dueToday = !done && !t.daily && isDueToday(t.due);
+    const el = document.createElement('div');
+    el.className = 'todo' + (done ? ' done' : '') + (isTop1 ? ' top1' : '') + (overdue ? ' overdue' : '') + (missed > 0 ? ' overdue' : '');
+    el.innerHTML = `
+      <div class="check" data-id="${t.id}">${done ? '✓' : ''}</div>
+      <div class="todo-main">
+        <div class="todo-top">
+          <div class="todo-text">${t.text}</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="rank-badge">${state.sort==='score' && !done ? '#'+(openSorted.indexOf(t)+1)+' · ' : ''}${Math.round(score)}</span>
+            <button class="del" data-del="${t.id}">×</button>
+          </div>
+        </div>
+        <div class="tags">
+          <span class="tag" style="color:${goalColor(t.goalId)};border-color:${goalColor(t.goalId)}">${goal ? goal.name : 'No goal'}</span>
+          <span class="tag cat">${t.category}</span>
+          ${overdue ? '<span class="tag overdue">⚠ overdue</span>' : ''}
+          ${dueToday ? '<span class="tag today">● due today</span>' : ''}
+          ${t.daily ? '<span class="tag daily">↻ daily</span>' : ''}
+          ${t.daily && missed > 0 ? `<span class="tag overdue">⚠ missed ${missed}d in a row</span>` : ''}
+          ${t.daily && missed === 0 && !done ? '<span class="tag today">● due today</span>' : ''}
+          ${t.cal ? '<span class="tag linked-cal">📅 on calendar</span>' : ''}
+          ${t.email ? '<span class="tag linked-email">✉️ in inbox</span>' : ''}
+          ${t.daily
+            ? ''
+            : `<span class="due">
+                <input type="date" data-due="${t.id}" value="${t.due || ''}">
+                ${dueLabel ? '· '+dueLabel : ''}
+              </span>`
+          }
+        </div>
+        <div class="bar">
+          <div class="seg" style="width:${(gw*40/total)*100}%;background:var(--goal)"></div>
+          <div class="seg" style="width:${(urg*35/total)*100}%;background:var(--signal)"></div>
+          <div class="seg" style="width:${(t.cal?15:0)/total*100}%;background:var(--calendar)"></div>
+          <div class="seg" style="width:${(t.email?10:0)/total*100}%;background:var(--email)"></div>
+        </div>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+
+  list.querySelectorAll('.check').forEach(c=>{
+    c.addEventListener('click', e=>{
+      const t = state.todos.find(x=>x.id===e.currentTarget.dataset.id);
+      if(t.daily){
+        t.lastDoneDate = isDoneToday(t) ? null : todayStr();
+      } else {
+        t.done = !t.done;
+      }
+      scheduleSave(); render();
+    });
+  });
+  list.querySelectorAll('[data-del]').forEach(b=>{
+    b.addEventListener('click', e=>{
+      state.todos = state.todos.filter(x=>x.id!==e.currentTarget.dataset.del);
+      scheduleSave(); render();
+    });
+  });
+  list.querySelectorAll('[data-due]').forEach(inp=>{
+    inp.addEventListener('change', e=>{
+      const t = state.todos.find(x=>x.id===e.target.dataset.due);
+      t.due = e.target.value || null;
+      scheduleSave(); render();
+    });
+  });
+}
+
+function ensureDailyDefaults(){
+  // Self-heals tasks that got marked daily (e.g. via the console sync script)
+  // without a createdDate/lastDoneDate — without this they'd default to
+  // "not late," which is the right fallback anyway, but this keeps the
+  // fields present so future edits don't have to check for undefined.
+  state.todos.forEach(t=>{
+    if(!t.daily) return;
+    if(t.createdDate === undefined) t.createdDate = todayStr();
+    if(t.lastDoneDate === undefined) t.lastDoneDate = null;
+  });
+}
+
+function render(){ ensureDailyDefaults(); renderGoals(); renderTodos(); }
+
+document.getElementById('addGoalBtn').addEventListener('click', ()=>{
+  const inp = document.getElementById('newGoalName');
+  if(!inp.value.trim()) return;
+  state.goals.push({id:'g'+Date.now(), name:inp.value.trim(), importance:3});
+  inp.value='';
+  scheduleSave(); render();
+});
+
+document.getElementById('addTodoBtn').addEventListener('click', ()=>{
+  const text = document.getElementById('newTodoText');
+  const goalSel = document.getElementById('newTodoGoal');
+  const due = document.getElementById('newTodoDue');
+  const dailyChk = document.getElementById('newTodoDaily');
+  if(!text.value.trim()) return;
+  const daily = dailyChk.checked;
+  state.todos.push({
+    id:'t'+Date.now(), text:text.value.trim(), goalId:goalSel.value,
+    category:'General',
+    due: daily ? null : (due.value || null),
+    done:false, cal:false, email:false,
+    daily: daily,
+    createdDate: daily ? todayStr() : undefined,
+    lastDoneDate: daily ? null : undefined
+  });
+  text.value=''; due.value=''; dailyChk.checked = false;
+  scheduleSave(); render();
+});
+
+document.getElementById('sortToggle').addEventListener('click', e=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  state.sort = btn.dataset.sort;
+  document.querySelectorAll('#sortToggle button').forEach(b=>b.classList.toggle('active', b===btn));
+  render();
+});
+
+// ---- MCP sync: calendar + email ----
+async function callClaude(prompt, mcpServers){
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model:'claude-sonnet-4-6',
+      max_tokens:1000,
+      messages:[{role:'user', content: prompt}],
+      mcp_servers: mcpServers
+    })
+  });
+  const data = await res.json();
+  const toolResults = (data.content||[])
+    .filter(b=>b.type==='mcp_tool_result')
+    .map(b=>b.content?.[0]?.text || '').join('\n');
+  const textBlocks = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  return {toolResults, textBlocks, raw:data};
+}
+
+function setStatus(msg){ document.getElementById('statusText').textContent = msg; }
+
+document.getElementById('calBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('calBtn');
+  btn.disabled = true;
+  setStatus('Reading calendar…');
+  try{
+    const todoLines = state.todos.filter(t=>!isTodoDone(t)).map(t=>`- ${t.text}`).join('\n');
+    const {textBlocks} = await callClaude(
+      `Look at my calendar events for the next 14 days. Here is my task list:\n${todoLines}\n\n` +
+      `For each task that matches or relates to a calendar event, note the task and the event's date. ` +
+      `Respond ONLY with a JSON array, no markdown fences, no prose. Each item: {"task":"<exact task text from the list above>","date":"YYYY-MM-DD"}. ` +
+      `If nothing matches, respond with [].`,
+      [{type:'url', url:'https://calendarmcp.googleapis.com/mcp/v1', name:'google-calendar'}]
+    );
+    const clean = textBlocks.replace(/```json|```/g,'').trim();
+    const matches = JSON.parse(clean || '[]');
+    matches.forEach(m=>{
+      const t = state.todos.find(x=>x.text === m.task);
+      if(t){ t.cal = true; if(m.date && !t.due) t.due = m.date; }
+    });
+    btn.classList.add('on');
+    setStatus(`Calendar synced · ${matches.length} task(s) matched to events`);
+    scheduleSave(); render();
+  }catch(e){
+    console.error(e);
+    setStatus('Calendar sync failed — check your connection in Settings');
+  }
+  btn.disabled = false;
+});
+
+document.getElementById('emlBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('emlBtn');
+  btn.disabled = true;
+  setStatus('Scanning inbox…');
+  try{
+    const todoLines = state.todos.filter(t=>!isTodoDone(t)).map(t=>`- ${t.text}`).join('\n');
+    const {textBlocks} = await callClaude(
+      `Check my recent and unread emails. Here is my task list:\n${todoLines}\n\n` +
+      `For each task that a recent email relates to or is waiting on (a reply needed, a client message, an invite, etc), note it. ` +
+      `Respond ONLY with a JSON array, no markdown fences, no prose. Each item: {"task":"<exact task text from the list above>"}. ` +
+      `If nothing matches, respond with [].`,
+      [{type:'url', url:'https://gmailmcp.googleapis.com/mcp/v1', name:'gmail'}]
+    );
+    const clean = textBlocks.replace(/```json|```/g,'').trim();
+    const matches = JSON.parse(clean || '[]');
+    matches.forEach(m=>{
+      const t = state.todos.find(x=>x.text === m.task);
+      if(t){ t.email = true; }
+    });
+    btn.classList.add('on');
+    setStatus(`Inbox synced · ${matches.length} task(s) flagged from email`);
+    scheduleSave(); render();
+  }catch(e){
+    console.error(e);
+    setStatus('Email sync failed — check your connection in Settings');
+  }
+  btn.disabled = false;
+});
+
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+
+document.getElementById('installBtn').addEventListener('click', async ()=>{
+  const hint = document.getElementById('installHint');
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    const choice = await deferredInstallPrompt.userChoice.catch(()=>null);
+    deferredInstallPrompt = null;
+    if(choice && choice.outcome === 'accepted'){
+      hint.style.display = 'none';
+      return;
+    }
+  }
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  const isWindows = /Windows/.test(ua);
+  const isMac = /Macintosh|Mac OS/.test(ua) && !isIOS;
+  const isEdge = /Edg\//.test(ua);
+  const isChrome = /Chrome\//.test(ua) && !isEdge;
+  let msg;
+  if(isIOS){
+    msg = 'Open this page in Safari, tap the Share icon, then "Add to Home Screen."';
+  } else if(isAndroid){
+    msg = 'Open this page in Chrome, tap the ⋮ menu, then "Add to Home screen" or "Install app."';
+  } else if(isWindows || isMac){
+    if(isEdge){
+      msg = 'Click the install icon (⊕) at the right end of the address bar, or the "…" menu → Apps → "Install this site as an app."';
+    } else if(isChrome){
+      msg = 'Click the install icon (⊕) at the right end of the address bar, or the ⋮ menu → "Cast, save, and share" → "Install page as app."';
+    } else {
+      msg = 'This browser doesn\'t support one-click install. Open this page in Chrome or Edge for a native app-style window with an icon on your desktop/taskbar.';
+    }
+    if(location.protocol === 'file:'){
+      msg += ' Note: installing works best when this page is hosted (not opened directly as a local file) — some browsers block install prompts for file:// pages.';
+    }
+  } else {
+    msg = 'Open this page in Chrome or Edge, then use the menu option to install it as an app.';
+  }
+  hint.textContent = msg;
+  hint.style.display = 'block';
+});
+
+// ---- Daily reminder notifications ----
+// Note: this is a static local page with no server/service worker, so reminders
+// can only fire while this tab (or installed app window) is actually open —
+// there's no true background/OS-level scheduling without hosting this with push support.
+if(!state.reminders) state.reminders = {enabled:false, time:'09:00'};
+
+const remindBtn = document.getElementById('remindBtn');
+const remindPanel = document.getElementById('remindPanel');
+const remindTime = document.getElementById('remindTime');
+
+function syncReminderUI(){
+  remindTime.value = state.reminders.time || '09:00';
+  remindBtn.classList.toggle('on', state.reminders.enabled);
+  remindBtn.textContent = '🔔 Daily reminders: ' + (state.reminders.enabled ? 'on' : 'off');
+  remindPanel.style.display = state.reminders.enabled ? 'flex' : 'none';
+}
+
+function topTasksSummary(n){
+  const open = state.todos.filter(t=>!isTodoDone(t)).sort((a,b)=>scoreOf(b)-scoreOf(a)).slice(0,n);
+  if(open.length===0) return 'Nothing on your list — add a task in Signal Deck.';
+  return open.map((t,i)=>`${i+1}. ${t.text}`).join('\n');
+}
+
+function fireReminderNotification(){
+  if(Notification.permission !== 'granted') return;
+  const n = new Notification('Signal Deck · today\'s top signals', {
+    body: topTasksSummary(3),
+    icon: 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' rx=\'22\' fill=\'%2314161b\'/%3E%3Crect x=\'22\' y=\'60\' width=\'12\' height=\'22\' rx=\'3\' fill=\'%23ff7a45\'/%3E%3Crect x=\'44\' y=\'44\' width=\'12\' height=\'38\' rx=\'3\' fill=\'%234fd1c5\'/%3E%3Crect x=\'66\' y=\'28\' width=\'12\' height=\'54\' rx=\'3\' fill=\'%239f7aea\'/%3E%3C/svg%3E',
+    tag: 'signal-deck-daily'
+  });
+  n.onclick = ()=>{ window.focus(); n.close(); };
+  localStorage.setItem('signal-deck-last-notified', new Date().toDateString());
+}
+
+function checkReminderTick(){
+  if(!state.reminders.enabled || Notification.permission !== 'granted') return;
+  const now = new Date();
+  const [h, m] = (state.reminders.time || '09:00').split(':').map(Number);
+  const lastNotified = localStorage.getItem('signal-deck-last-notified');
+  const todayStr = now.toDateString();
+  if(lastNotified === todayStr) return;
+  if(now.getHours() > h || (now.getHours() === h && now.getMinutes() >= m)){
+    fireReminderNotification();
+  }
+}
+
+remindBtn.addEventListener('click', async ()=>{
+  if(!('Notification' in window)){
+    setStatus('Notifications aren\'t supported in this browser');
+    return;
+  }
+  if(!state.reminders.enabled){
+    let perm = Notification.permission;
+    if(perm === 'default') perm = await Notification.requestPermission();
+    if(perm !== 'granted'){
+      setStatus('Notifications blocked — enable them for this site in browser settings');
+      return;
+    }
+    state.reminders.enabled = true;
+    setStatus('Daily reminders on · you\'ll get a nudge while this tab is open');
+  } else {
+    state.reminders.enabled = false;
+    setStatus('Daily reminders off');
+  }
+  scheduleSave();
+  syncReminderUI();
+});
+
+remindTime.addEventListener('change', e=>{
+  state.reminders.time = e.target.value || '09:00';
+  scheduleSave();
+});
+
+document.getElementById('testRemindBtn').addEventListener('click', async ()=>{
+  if(!('Notification' in window)) return;
+  let perm = Notification.permission;
+  if(perm === 'default') perm = await Notification.requestPermission();
+  if(perm === 'granted'){
+    const n = new Notification('Signal Deck · test notification', {
+      body: topTasksSummary(3),
+      tag: 'signal-deck-test'
+    });
+    n.onclick = ()=>{ window.focus(); n.close(); };
+  } else {
+    setStatus('Notifications blocked — enable them for this site in browser settings');
+  }
+});
+
+setInterval(checkReminderTick, 60000);
+// Daily tasks derive "done" from today's date, so if this tab stays open
+// across midnight, re-render periodically to flip them back to open.
+setInterval(render, 5 * 60000);
+
+loadState().then(()=>{
+  syncReminderUI();
+  if(apiMode){
+    setStatus('Synced with other devices via the shared backend');
+  } else if(location.protocol === 'file:'){
+    setStatus('Saved on this device only — host via serve.ps1 to sync across devices');
+  } else {
+    setStatus(storageWorking ? 'Saved on this device only — this host has no shared backend' : 'Not saving');
+  }
+});
+</script>
+</body>
+</html>
