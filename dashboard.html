@@ -145,17 +145,8 @@
   .goal-name>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;min-width:0}
   .goal-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:8px;flex-shrink:0;box-shadow:0 0 8px currentColor}
   .goal-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);flex-shrink:0;background:rgba(0,0,0,0.04);padding:2px 7px;border-radius:20px;border:1px solid var(--line-soft)}
-  input[type=range]{
-    -webkit-appearance:none;appearance:none;
-    width:100%;height:5px;cursor:pointer;background:rgba(0,0,0,0.08);border-radius:6px;outline:none;
-  }
-  input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:6px;background:linear-gradient(90deg,var(--goal),rgba(255,128,30,0.15))}
-  input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;
-    background:var(--goal);border:2px solid #fff;box-shadow:0 0 0 3px rgba(255,128,30,0.25);margin-top:-4.5px;cursor:pointer;
-  }
-  input[type=range]::-moz-range-track{height:5px;border-radius:6px;background:rgba(0,0,0,0.08)}
-  input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--goal);border:2px solid #fff;cursor:pointer}
+  .imp-meter{width:100%;height:5px;border-radius:6px;background:rgba(0,0,0,0.08);overflow:hidden}
+  .imp-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--goal),rgba(255,128,30,0.6))}
   .imp-label{font-size:10.5px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;letter-spacing:0.03em}
   input[type=text],select,input[type=date],input[type=time]{
     background:#fff;border:1px solid var(--line);color:var(--text);
@@ -187,7 +178,15 @@
   .todo:hover{transform:translateY(-2px);box-shadow:inset 0px 4px 4px 0px rgba(255,255,255,0.25), 0 10px 26px rgba(0,0,0,0.1);border-left-color:var(--accent-c, #b8bcc8)}
   .todo.done{opacity:0.5}
   .todo.done .todo-text{text-decoration:line-through}
-  .todo.top1{border-color:rgba(0,132,255,0.4);box-shadow:inset 0px 4px 4px 0px rgba(255,255,255,0.25), 0 0 0 1px rgba(0,132,255,0.15), 0 8px 24px rgba(0,132,255,0.12)}
+  .main-label{font-family:'Fustat',sans-serif;font-size:13px;font-weight:700;color:var(--brand);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  #mainTaskWrap{margin-bottom:22px}
+  #mainTaskWrap:empty{margin-bottom:0}
+  .todo.featured{
+    padding:20px 22px;border-width:1.5px;
+    box-shadow:inset 0px 4px 4px 0px rgba(255,255,255,0.3), 0 0 0 1px rgba(0,132,255,0.15), 0 10px 30px rgba(0,132,255,0.12);
+  }
+  .todo.featured .todo-text{font-size:17px;font-weight:600}
+  .todo.featured .check{width:26px;height:26px}
   .todo.overdue{border-color:rgba(255,59,92,0.4)}
   .todo.overdue .due{color:var(--danger)}
   .todo.critical{border-color:var(--danger);box-shadow:inset 0px 4px 4px 0px rgba(255,255,255,0.25), 0 0 0 1px rgba(255,59,92,0.3), 0 8px 24px rgba(255,59,92,0.15);animation:criticalPulse 2s ease-in-out infinite, slideIn .25s ease}
@@ -209,11 +208,6 @@
   .todo-main{flex:1;min-width:0}
   .todo-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
   .todo-text{font-size:14.5px;font-weight:500;line-height:1.4}
-  .rank-badge{
-    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);white-space:nowrap;
-    padding:3px 9px;background:rgba(0,0,0,0.04);border-radius:999px;border:1px solid var(--line);
-  }
-  .todo.top1 .rank-badge{color:#fff;background:var(--brand);border-color:transparent;font-weight:700}
   .tags{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;align-items:center}
   .tag{font-size:10.5px;padding:3.5px 10px;border-radius:20px;font-family:'JetBrains Mono',monospace;letter-spacing:0.02em;border:1px solid var(--line);background:rgba(0,0,0,0.03)}
   .tag.cat{color:var(--text-dim)}
@@ -222,15 +216,10 @@
   .due{font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:4px}
   .due input{background:transparent;border:none;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;padding:0;width:100px}
   .due input:hover{color:var(--text)}
-  .bar{display:flex;height:5px;border-radius:4px;overflow:hidden;margin-top:11px;background:rgba(0,0,0,0.06)}
-  .seg{height:100%;transition:width .3s ease}
   .del{background:none;border:none;color:var(--text-dim);font-size:17px;cursor:pointer;padding:0 5px;border-radius:6px;box-shadow:none;transition:color .15s, background .15s;line-height:1}
   .del:hover{color:var(--danger);background:rgba(255,59,92,0.1);transform:none}
   .empty{color:var(--text-dim);font-size:13px;text-align:center;padding:48px 0}
   .empty::before{content:'◇';display:block;font-size:24px;margin-bottom:10px;color:var(--line)}
-  .legend{display:flex;gap:14px;font-size:11px;color:var(--text-dim);flex-wrap:wrap;margin-top:16px}
-  .legend span{display:inline-flex;align-items:center;gap:5px}
-  .legend i{width:8px;height:8px;border-radius:2px;display:inline-block}
 
   /* ---- Stats strip ---- */
   .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
@@ -269,13 +258,13 @@
     .sort-toggle{justify-content:space-between}
     .sort-toggle button{flex:1;text-align:center}
     .todo{padding:13px}
+    .todo.featured{padding:16px}
+    .todo.featured .todo-text{font-size:15.5px}
     .todo-top{flex-wrap:wrap}
-    .rank-badge{font-size:10px}
     .todo-text{font-size:13.5px}
     .tags{gap:5px}
     .tag{font-size:10px;padding:3px 8px}
     .due input{width:88px}
-    .legend{gap:10px;font-size:10.5px}
   }
   @media(max-width:380px){
     .connect-row button{font-size:11px;padding:7px 9px}
@@ -309,11 +298,13 @@
 <main>
   <div class="panel" id="goalsPanel">
     <h3 style="margin:0 0 4px;font-size:14px">Goals</h3>
-    <div class="sub" style="margin-bottom:6px">Drag weight to reprioritize everything below</div>
+    <div class="sub" style="margin-bottom:6px">How much each goal matters, out of 5</div>
     <div id="goalList"></div>
   </div>
 
   <div>
+    <div id="mainTaskWrap"></div>
+
     <div class="toolbar">
       <div class="sort-toggle" id="sortToggle">
         <button data-sort="score" class="active">Score</button>
@@ -324,12 +315,6 @@
     </div>
 
     <div id="todoList"></div>
-    <div class="legend">
-      <span><i style="background:var(--goal)"></i>goal weight</span>
-      <span><i style="background:var(--signal)"></i>urgency</span>
-      <span><i style="background:var(--calendar)"></i>on calendar</span>
-      <span><i style="background:var(--email)"></i>in inbox</span>
-    </div>
   </div>
 </main>
 
@@ -501,18 +486,10 @@ function renderGoals(){
         <span><span class="goal-dot" style="background:${goalColor(g.id)}"></span>${g.name}</span>
         <span class="goal-count">${count} open</span>
       </div>
-      <input type="range" min="1" max="5" value="${g.importance}" data-goal="${g.id}">
+      <div class="imp-meter"><div class="imp-fill" style="width:${g.importance*20}%"></div></div>
       <div class="imp-label">IMPORTANCE ${g.importance}/5</div>
     `;
     list.appendChild(row);
-  });
-  list.querySelectorAll('input[type=range]').forEach(inp=>{
-    inp.addEventListener('input', e=>{
-      const g = goalById(e.target.dataset.goal);
-      g.importance = parseInt(e.target.value);
-      scheduleSave();
-      render();
-    });
   });
 }
 
@@ -525,7 +502,73 @@ function fmtDue(due){
   return `in ${days}d`;
 }
 
+function buildTodoEl(t, featured){
+  const goal = goalById(t.goalId);
+  const dueLabel = t.daily ? null : fmtDue(t.due);
+  const done = isTodoDone(t);
+  const missed = t.daily ? dailyMissedStreak(t) : 0;
+  const overdue = !done && !t.daily && isOverdue(t.due);
+  const dueToday = !done && !t.daily && isDueToday(t.due);
+  const critical = !done && isCritical(t);
+
+  const el = document.createElement('div');
+  el.className = 'todo' + (featured ? ' featured' : '') + (done ? ' done' : '') + (overdue ? ' overdue' : '') + (missed > 0 ? ' overdue' : '') + (critical ? ' critical' : '');
+  el.style.setProperty('--accent-c', goalColor(t.goalId));
+  el.innerHTML = `
+    <div class="check" data-id="${t.id}">${done ? '✓' : ''}</div>
+    <div class="todo-main">
+      <div class="todo-top">
+        <div class="todo-text">${t.text}</div>
+        <button class="del" data-del="${t.id}">×</button>
+      </div>
+      <div class="tags">
+        <span class="tag" style="color:${goalColor(t.goalId)};border-color:${goalColor(t.goalId)}">${goal ? goal.name : 'No goal'}</span>
+        <span class="tag cat">${t.category}</span>
+        ${critical ? '<span class="tag critical">🔥 critical — late 3+ days</span>' : ''}
+        ${overdue ? '<span class="tag overdue">⚠ overdue</span>' : ''}
+        ${dueToday ? '<span class="tag today">● due today</span>' : ''}
+        ${t.daily ? '<span class="tag daily">↻ daily</span>' : ''}
+        ${t.daily && missed > 0 ? `<span class="tag overdue">⚠ missed ${missed}d in a row</span>` : ''}
+        ${t.daily && missed === 0 && !done ? '<span class="tag today">● due today</span>' : ''}
+        ${t.cal ? '<span class="tag linked-cal">📅 on calendar</span>' : ''}
+        ${t.email ? '<span class="tag linked-email">✉️ in inbox</span>' : ''}
+        ${t.daily
+          ? ''
+          : `<span class="due">
+              <input type="date" data-due="${t.id}" value="${t.due || ''}">
+              ${dueLabel ? '· '+dueLabel : ''}
+            </span>`
+        }
+      </div>
+    </div>
+  `;
+  return el;
+}
+
+function attachCardListeners(el, t){
+  el.querySelector('.check').addEventListener('click', ()=>{
+    if(t.daily){
+      t.lastDoneDate = isDoneToday(t) ? null : todayStr();
+    } else {
+      t.done = !t.done;
+    }
+    scheduleSave(); render();
+  });
+  el.querySelector('[data-del]').addEventListener('click', ()=>{
+    state.todos = state.todos.filter(x=>x.id!==t.id);
+    scheduleSave(); render();
+  });
+  const dueInp = el.querySelector('[data-due]');
+  if(dueInp){
+    dueInp.addEventListener('change', e=>{
+      t.due = e.target.value || null;
+      scheduleSave(); render();
+    });
+  }
+}
+
 function renderTodos(){
+  const mainWrap = document.getElementById('mainTaskWrap');
   const list = document.getElementById('todoList');
   const open = state.todos.filter(t=>!isTodoDone(t));
   const overdueCount = open.filter(t=>!t.daily && isOverdue(t.due)).length;
@@ -553,7 +596,20 @@ function renderTodos(){
     </div>
   `).join('');
 
-  let sorted = [...state.todos];
+  // ---- Main task: the single highest-priority open task, featured above the rest ----
+  const mainTask = open.length ? [...open].sort((a,b)=>scoreOf(b)-scoreOf(a))[0] : null;
+  mainWrap.innerHTML = '';
+  if(mainTask){
+    const label = document.createElement('div');
+    label.className = 'main-label';
+    label.textContent = '🎯 Main task';
+    mainWrap.appendChild(label);
+    const mainEl = buildTodoEl(mainTask, true);
+    attachCardListeners(mainEl, mainTask);
+    mainWrap.appendChild(mainEl);
+  }
+
+  let sorted = state.todos.filter(t => !mainTask || t.id !== mainTask.id);
   const doneRank = t => isTodoDone(t) ? 1 : 0;
   if(state.sort === 'score'){
     sorted.sort((a,b)=> (doneRank(a) - doneRank(b)) || (scoreOf(b)-scoreOf(a)));
@@ -569,87 +625,10 @@ function renderTodos(){
     return;
   }
 
-  sorted.forEach((t, i)=>{
-    const goal = goalById(t.goalId);
-    const score = scoreOf(t);
-    const gw = goal ? goal.importance/5 : 0.4;
-    const urg = urgencyOf(t);
-    const total = gw*40 + urg*35 + (t.cal?15:0) + (t.email?10:0);
-    const dueLabel = t.daily ? null : fmtDue(t.due);
-    const done = isTodoDone(t);
-    const missed = t.daily ? dailyMissedStreak(t) : 0;
-
-    const openSorted = sorted.filter(x=>!isTodoDone(x));
-    const isTop1 = state.sort==='score' && !done && openSorted.indexOf(t) === 0;
-    const overdue = !done && !t.daily && isOverdue(t.due);
-    const dueToday = !done && !t.daily && isDueToday(t.due);
-    const critical = !done && isCritical(t);
-    const el = document.createElement('div');
-    el.className = 'todo' + (done ? ' done' : '') + (isTop1 ? ' top1' : '') + (overdue ? ' overdue' : '') + (missed > 0 ? ' overdue' : '') + (critical ? ' critical' : '');
-    el.style.setProperty('--accent-c', goalColor(t.goalId));
-    el.innerHTML = `
-      <div class="check" data-id="${t.id}">${done ? '✓' : ''}</div>
-      <div class="todo-main">
-        <div class="todo-top">
-          <div class="todo-text">${t.text}</div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span class="rank-badge">${state.sort==='score' && !done ? '#'+(openSorted.indexOf(t)+1)+' · ' : ''}${Math.round(score)}</span>
-            <button class="del" data-del="${t.id}">×</button>
-          </div>
-        </div>
-        <div class="tags">
-          <span class="tag" style="color:${goalColor(t.goalId)};border-color:${goalColor(t.goalId)}">${goal ? goal.name : 'No goal'}</span>
-          <span class="tag cat">${t.category}</span>
-          ${critical ? '<span class="tag critical">🔥 critical — late 3+ days</span>' : ''}
-          ${overdue ? '<span class="tag overdue">⚠ overdue</span>' : ''}
-          ${dueToday ? '<span class="tag today">● due today</span>' : ''}
-          ${t.daily ? '<span class="tag daily">↻ daily</span>' : ''}
-          ${t.daily && missed > 0 ? `<span class="tag overdue">⚠ missed ${missed}d in a row</span>` : ''}
-          ${t.daily && missed === 0 && !done ? '<span class="tag today">● due today</span>' : ''}
-          ${t.cal ? '<span class="tag linked-cal">📅 on calendar</span>' : ''}
-          ${t.email ? '<span class="tag linked-email">✉️ in inbox</span>' : ''}
-          ${t.daily
-            ? ''
-            : `<span class="due">
-                <input type="date" data-due="${t.id}" value="${t.due || ''}">
-                ${dueLabel ? '· '+dueLabel : ''}
-              </span>`
-          }
-        </div>
-        <div class="bar">
-          <div class="seg" style="width:${(gw*40/total)*100}%;background:var(--goal)"></div>
-          <div class="seg" style="width:${(urg*35/total)*100}%;background:var(--signal)"></div>
-          <div class="seg" style="width:${(t.cal?15:0)/total*100}%;background:var(--calendar)"></div>
-          <div class="seg" style="width:${(t.email?10:0)/total*100}%;background:var(--email)"></div>
-        </div>
-      </div>
-    `;
+  sorted.forEach(t=>{
+    const el = buildTodoEl(t, false);
+    attachCardListeners(el, t);
     list.appendChild(el);
-  });
-
-  list.querySelectorAll('.check').forEach(c=>{
-    c.addEventListener('click', e=>{
-      const t = state.todos.find(x=>x.id===e.currentTarget.dataset.id);
-      if(t.daily){
-        t.lastDoneDate = isDoneToday(t) ? null : todayStr();
-      } else {
-        t.done = !t.done;
-      }
-      scheduleSave(); render();
-    });
-  });
-  list.querySelectorAll('[data-del]').forEach(b=>{
-    b.addEventListener('click', e=>{
-      state.todos = state.todos.filter(x=>x.id!==e.currentTarget.dataset.del);
-      scheduleSave(); render();
-    });
-  });
-  list.querySelectorAll('[data-due]').forEach(inp=>{
-    inp.addEventListener('change', e=>{
-      const t = state.todos.find(x=>x.id===e.target.dataset.due);
-      t.due = e.target.value || null;
-      scheduleSave(); render();
-    });
   });
 }
 
