@@ -455,7 +455,7 @@ let state = {
     {id:'t1', text:'Deploy freelance projects to Railway', goalId:'g1', category:'Deployment', due:null, done:true, cal:false, email:false, daily:false},
     {id:'t2', text:'Update portfolio site', goalId:'g2', category:'Portfolio', due:null, done:true, cal:false, email:false, daily:false},
     {id:'t4', text:'Make profiles on all freelance sites and social media', goalId:'g3', category:'Freelance', due:null, done:false, cal:true, email:false, daily:true},
-    {id:'t3', text:'Update resume', goalId:'g2', category:'Resume', due:null, done:false, cal:true, email:false, daily:true},
+    {id:'t3', text:'Update resume', goalId:'g2', category:'Resume', due:null, done:true, cal:false, email:false, daily:false},
     {id:'t8', text:'Start working on Gumroad and Etsy side business', goalId:'g7', category:'Side business', due:null, done:false, cal:true, email:false, daily:true},
     {id:'t9', text:'Work on AI automation', goalId:'g8', category:'AI automation', due:null, done:false, cal:true, email:false, daily:true},
     {id:'t5', text:'Build the game', goalId:'g4', category:'Game dev', due:null, done:false, cal:true, email:false, daily:true},
@@ -491,14 +491,40 @@ function scheduleSave(){
   saveTimer = setTimeout(trySave, 400);
 }
 
+// ---- Data migrations ----
+// Your saved localStorage copy wins over the defaults above, so edits made to
+// this file would never reach a browser that's already been used. Bumping
+// DATA_VERSION and adding a migration makes the change apply once, on next load.
+const DATA_VERSION = 2;
+
+const MIGRATIONS = {
+  // v2 — resume is finished, so it stops being a daily task.
+  2: (st)=>{
+    const t = st.todos.find(x => x.id === 't3');
+    if(t){ t.done = true; t.daily = false; t.cal = false; t.due = null; }
+  }
+};
+
 function loadState(){
+  let storedVersion = 1;
   try{
     const raw = localStorage.getItem('signal-deck-data');
     if(raw){
       const parsed = JSON.parse(raw);
       if(parsed.goals && parsed.todos) state = {...state, ...parsed};
+      storedVersion = parsed.dataVersion || 1;
+    } else {
+      storedVersion = DATA_VERSION; // fresh install already has the latest defaults
     }
   }catch(e){ /* no saved data yet, use defaults */ }
+
+  let migrated = false;
+  for(let v = storedVersion + 1; v <= DATA_VERSION; v++){
+    if(MIGRATIONS[v]){ MIGRATIONS[v](state); migrated = true; }
+  }
+  state.dataVersion = DATA_VERSION;
+  if(migrated) trySave();
+
   render();
   return Promise.resolve();
 }
