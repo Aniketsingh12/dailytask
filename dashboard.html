@@ -446,7 +446,7 @@ let state = {
     {id:'g2', name:'Resume', importance:4},
     {id:'g7', name:'Side business (Gumroad/Etsy)', importance:4},
     {id:'g8', name:'AI automation', importance:4},
-    {id:'g4', name:'Build the game (PC/mobile)', importance:3},
+    {id:'g4', name:'Build the game (PC/mobile)', importance:4},
     {id:'g5', name:'Learn MCP', importance:2},
     {id:'g6', name:'Reading', importance:2},
     {id:'g1', name:'Deploy project to Railway', importance:5},
@@ -495,13 +495,18 @@ function scheduleSave(){
 // Your saved localStorage copy wins over the defaults above, so edits made to
 // this file would never reach a browser that's already been used. Bumping
 // DATA_VERSION and adding a migration makes the change apply once, on next load.
-const DATA_VERSION = 2;
+const DATA_VERSION = 3;
 
 const MIGRATIONS = {
   // v2 — resume is finished, so it stops being a daily task.
   2: (st)=>{
     const t = st.todos.find(x => x.id === 't3');
     if(t){ t.done = true; t.daily = false; t.cal = false; t.due = null; }
+  },
+  // v3 — game dev promoted to weight 4, which puts it in the "important" tier.
+  3: (st)=>{
+    const g = st.goals.find(x => x.id === 'g4');
+    if(g) g.importance = 4;
   }
 };
 
