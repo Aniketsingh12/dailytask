@@ -387,7 +387,7 @@
   <div class="tray card" id="installHint"></div>
   <div class="tray card" id="remindPanel">
     <span>Remind me daily at</span>
-    <input type="time" id="remindTime" value="09:00">
+    <input type="time" id="remindTime" value="10:00">
     <button id="testRemindBtn">Send test notification</button>
     <span style="color:var(--ink-3)">Only fires while this tab is open</span>
   </div>
@@ -495,7 +495,7 @@ function scheduleSave(){
 // Your saved localStorage copy wins over the defaults above, so edits made to
 // this file would never reach a browser that's already been used. Bumping
 // DATA_VERSION and adding a migration makes the change apply once, on next load.
-const DATA_VERSION = 4;
+const DATA_VERSION = 5;
 
 const MIGRATIONS = {
   // v2 — resume is finished, so it stops being a daily task.
@@ -517,7 +517,10 @@ const MIGRATIONS = {
     if(g7) g7.importance = 5;
     const g8 = st.goals.find(x => x.id === 'g8');
     if(g8) g8.importance = 5;
-  }
+  },
+  // v5 — daily tasks had been counting every unopened day since they were
+  // created, so everything showed critical at once. Reset the clock to today.
+  5: (st)=>{ rebaseDailies(st); }
 };
 
 function loadState(){
@@ -538,7 +541,14 @@ function loadState(){
     if(MIGRATIONS[v]){ MIGRATIONS[v](state); migrated = true; }
   }
   state.dataVersion = DATA_VERSION;
-  if(migrated) trySave();
+
+  // Away for a few days? Start from today rather than 3 weeks in the hole.
+  if(state.lastOpened && daysBetween(todayStr(), state.lastOpened) >= ABSENCE_GRACE_DAYS){
+    rebaseDailies(state);
+    migrated = true;
+  }
+  state.lastOpened = todayStr();
+  trySave();
 
   render();
   return Promise.resolve();
@@ -630,6 +640,24 @@ function dailyDaysSince(t){
   const today = new Date(todayStr());
   const refDate = new Date(new Date(ref).toDateString());
   return Math.round((today - refDate) / 86400000);
+}
+
+// If Signal Deck goes unopened for a stretch, that gap shouldn't be billed as
+// missed days — otherwise one holiday buries every task in permanent "critical"
+// and the ranking stops meaning anything. Coming back rebases the clock to today.
+// Streaks still reset honestly, because history[] is left untouched.
+const ABSENCE_GRACE_DAYS = 3;
+
+function rebaseDailies(st){
+  st.todos.forEach(t=>{
+    if(!t.daily) return;
+    t.createdDate = todayStr();
+    t.lastDoneDate = null;
+  });
+}
+
+function daysBetween(a, b){
+  return Math.round((new Date(new Date(a).toDateString()) - new Date(new Date(b).toDateString())) / 86400000);
 }
 
 function dailyMissedStreak(t){
@@ -1091,14 +1119,14 @@ document.getElementById('installBtn').addEventListener('click', async ()=>{
 // Note: this is a static local page with no server/service worker, so reminders
 // can only fire while this tab (or installed app window) is actually open —
 // there's no true background/OS-level scheduling without hosting this with push support.
-if(!state.reminders) state.reminders = {enabled:false, time:'09:00'};
+if(!state.reminders) state.reminders = {enabled:false, time:'10:00'};
 
 const remindBtn = document.getElementById('remindBtn');
 const remindPanel = document.getElementById('remindPanel');
 const remindTime = document.getElementById('remindTime');
 
 function syncReminderUI(){
-  remindTime.value = state.reminders.time || '09:00';
+  remindTime.value = state.reminders.time || '10:00';
   remindBtn.classList.toggle('on', state.reminders.enabled);
   remindBtn.textContent = 'Reminders: ' + (state.reminders.enabled ? 'on' : 'off');
   remindPanel.classList.toggle('show', state.reminders.enabled);
@@ -1132,9 +1160,9 @@ function topTasksSummary(){ return nudgeBody(); }
 // Three escalating checkpoints a day. The later two only fire if the main task
 // is STILL not done, and they get progressively harder to ignore.
 const NUDGE_SLOTS = [
-  {key:'am',  offset:0, prefix:'Today: '},
-  {key:'mid', offset:4, prefix:'Still open: '},
-  {key:'pm',  offset:8, prefix:'Last call: '}
+  {key:'am',  offset:0,  prefix:'Today: '},
+  {key:'mid', offset:5,  prefix:'Still open: '},
+  {key:'pm',  offset:11, prefix:'Last call: '}
 ];
 
 function fireReminderNotification(slot){
@@ -1159,7 +1187,7 @@ function fireReminderNotification(slot){
 function checkReminderTick(){
   if(!state.reminders.enabled || Notification.permission !== 'granted') return;
   const now = new Date();
-  const [h, m] = (state.reminders.time || '09:00').split(':').map(Number);
+  const [h, m] = (state.reminders.time || '10:00').split(':').map(Number);
   const today = todayStr();
   const main = mainTaskNow();
 
@@ -1200,7 +1228,7 @@ remindBtn.addEventListener('click', async ()=>{
 });
 
 remindTime.addEventListener('change', e=>{
-  state.reminders.time = e.target.value || '09:00';
+  state.reminders.time = e.target.value || '10:00';
   scheduleSave();
 });
 
