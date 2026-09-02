@@ -444,8 +444,8 @@ let state = {
   goals: [
     {id:'g3', name:'Freelance & social profiles', importance:5},
     {id:'g2', name:'Resume', importance:4},
-    {id:'g7', name:'Side business (Gumroad/Etsy)', importance:4},
-    {id:'g8', name:'AI automation', importance:4},
+    {id:'g7', name:'Side business (Gumroad/Etsy)', importance:5},
+    {id:'g8', name:'AI automation', importance:5},
     {id:'g4', name:'Build the game (PC/mobile)', importance:4},
     {id:'g5', name:'Learn MCP', importance:2},
     {id:'g6', name:'Reading', importance:2},
@@ -454,7 +454,7 @@ let state = {
   todos: [
     {id:'t1', text:'Deploy freelance projects to Railway', goalId:'g1', category:'Deployment', due:null, done:true, cal:false, email:false, daily:false},
     {id:'t2', text:'Update portfolio site', goalId:'g2', category:'Portfolio', due:null, done:true, cal:false, email:false, daily:false},
-    {id:'t4', text:'Make profiles on all freelance sites and social media', goalId:'g3', category:'Freelance', due:null, done:false, cal:true, email:false, daily:true},
+    {id:'t4', text:'Make profiles on all freelance sites and social media', goalId:'g3', category:'Freelance', due:null, done:true, cal:false, email:false, daily:false},
     {id:'t3', text:'Update resume', goalId:'g2', category:'Resume', due:null, done:true, cal:false, email:false, daily:false},
     {id:'t8', text:'Start working on Gumroad and Etsy side business', goalId:'g7', category:'Side business', due:null, done:false, cal:true, email:false, daily:true},
     {id:'t9', text:'Work on AI automation', goalId:'g8', category:'AI automation', due:null, done:false, cal:true, email:false, daily:true},
@@ -495,7 +495,7 @@ function scheduleSave(){
 // Your saved localStorage copy wins over the defaults above, so edits made to
 // this file would never reach a browser that's already been used. Bumping
 // DATA_VERSION and adding a migration makes the change apply once, on next load.
-const DATA_VERSION = 3;
+const DATA_VERSION = 4;
 
 const MIGRATIONS = {
   // v2 — resume is finished, so it stops being a daily task.
@@ -507,6 +507,16 @@ const MIGRATIONS = {
   3: (st)=>{
     const g = st.goals.find(x => x.id === 'g4');
     if(g) g.importance = 4;
+  },
+  // v4 — freelance profiles finished. Side business + AI automation take over
+  // as the core focus, so both go to weight 5.
+  4: (st)=>{
+    const t = st.todos.find(x => x.id === 't4');
+    if(t){ t.done = true; t.daily = false; t.cal = false; t.due = null; }
+    const g7 = st.goals.find(x => x.id === 'g7');
+    if(g7) g7.importance = 5;
+    const g8 = st.goals.find(x => x.id === 'g8');
+    if(g8) g8.importance = 5;
   }
 };
 
@@ -679,10 +689,18 @@ function longestStreak(){
   return streaks.length ? Math.max(...streaks) : 0;
 }
 
-function mainTaskNow(){
+// Everything in the top ("core") tier counts as a main task. If nothing is
+// core, the single highest-scoring task is promoted so there's always one focus.
+function mainTasksNow(){
   const open = state.todos.filter(t => !isTodoDone(t));
-  if(!open.length) return null;
-  return [...open].sort((a,b) => scoreOf(b) - scoreOf(a))[0];
+  if(!open.length) return [];
+  const ranked = [...open].sort((a,b) => scoreOf(b) - scoreOf(a));
+  const core = ranked.filter(t => tierOf(t).key === 'core');
+  return core.length ? core.slice(0,3) : ranked.slice(0,1);
+}
+
+function mainTaskNow(){
+  return mainTasksNow()[0] || null;
 }
 
 function isTodoDone(t){
@@ -801,6 +819,16 @@ function attachCardListeners(el, t){
   }
 }
 
+function stakesFor(t){
+  const missed = t.daily ? dailyMissedStreak(t) : 0;
+  const streak = t.daily ? currentStreak(t) : 0;
+  const tier = tierOf(t);
+  if(missed >= tier.days) return `<b>${missed} days behind.</b> Past its ${tier.label} limit \u2014 clear it before anything else.`;
+  if(missed > 0) return `<b>Skipped ${missed} day${missed===1?'':'s'}.</b> ${tier.days - missed} more and it goes critical.`;
+  if(streak >= 2) return `<b>${streak}-day streak.</b> Do it today and it keeps running.`;
+  return 'Start here. Everything else waits.';
+}
+
 function renderTodos(){
   const mainWrap = document.getElementById('mainTaskWrap');
   const list = document.getElementById('todoList');
@@ -834,30 +862,27 @@ function renderTodos(){
     </div>
   `).join('');
 
-  // ---- Main task: the single highest-priority open task, featured above the rest ----
-  const mainTask = open.length ? [...open].sort((a,b)=>scoreOf(b)-scoreOf(a))[0] : null;
+  // ---- Main tasks: the core-tier work, featured above everything else ----
+  const mainTasks = mainTasksNow();
+  const mainIds = new Set(mainTasks.map(t => t.id));
   mainWrap.innerHTML = '';
-  if(mainTask){
+  if(mainTasks.length){
     const label = document.createElement('div');
     label.className = 'hero-label';
-    label.textContent = 'Main task';
+    label.textContent = mainTasks.length > 1 ? 'Main tasks' : 'Main task';
     mainWrap.appendChild(label);
-    const mainEl = buildTodoEl(mainTask, true);
-    attachCardListeners(mainEl, mainTask);
-    const stakes = document.createElement('div');
-    stakes.className = 'stakes';
-    const mMissed = mainTask.daily ? dailyMissedStreak(mainTask) : 0;
-    const mStreak = mainTask.daily ? currentStreak(mainTask) : 0;
-    const tier = tierOf(mainTask);
-    if(mMissed >= tier.days) stakes.innerHTML = `<b>${mMissed} days behind.</b> This is past its ${tier.label} limit \u2014 clear it before anything else.`;
-    else if(mMissed > 0) stakes.innerHTML = `<b>Skipped ${mMissed} day${mMissed===1?'':'s'}.</b> ${tier.days - mMissed} more and it goes critical.`;
-    else if(mStreak >= 2) stakes.innerHTML = `<b>${mStreak}-day streak.</b> Do it today and it keeps running.`;
-    else stakes.innerHTML = 'Start here. Everything else waits.';
-    mainEl.querySelector('.task-body').appendChild(stakes);
-    mainWrap.appendChild(mainEl);
+    mainTasks.forEach(t=>{
+      const el = buildTodoEl(t, true);
+      attachCardListeners(el, t);
+      const stakes = document.createElement('div');
+      stakes.className = 'stakes';
+      stakes.innerHTML = stakesFor(t);
+      el.querySelector('.task-body').appendChild(stakes);
+      mainWrap.appendChild(el);
+    });
   }
 
-  let sorted = state.todos.filter(t => !mainTask || t.id !== mainTask.id);
+  let sorted = state.todos.filter(t => !mainIds.has(t.id));
   const doneRank = t => isTodoDone(t) ? 1 : 0;
   if(state.sort === 'score'){
     sorted.sort((a,b)=> (doneRank(a) - doneRank(b)) || (scoreOf(b)-scoreOf(a)));
@@ -1081,15 +1106,19 @@ function syncReminderUI(){
 
 // The main task always leads. Everything else is a footnote to it.
 function nudgeBody(){
-  const main = mainTaskNow();
-  if(!main) return 'Everything is done. Take the win.';
-  const missed = main.daily ? dailyMissedStreak(main) : 0;
-  const streak = main.daily ? currentStreak(main) : 0;
-  let body = main.text;
-  if(missed > 0) body += `  \u2014 skipped ${missed} day${missed===1?'':'s'} running`;
-  else if(streak > 1) body += `  \u2014 ${streak}-day streak on the line`;
+  const mains = mainTasksNow();
+  if(!mains.length) return 'Everything is done. Take the win.';
+  let body = mains.map((t,i)=>{
+    const missed = t.daily ? dailyMissedStreak(t) : 0;
+    const streak = t.daily ? currentStreak(t) : 0;
+    let line = (mains.length > 1 ? (i+1) + '. ' : '') + t.text;
+    if(missed > 0) line += `  \u2014 skipped ${missed} day${missed===1?'':'s'} running`;
+    else if(streak > 1) line += `  \u2014 ${streak}-day streak on the line`;
+    return line;
+  }).join('\n');
+  const mainIds = new Set(mains.map(t => t.id));
   const rest = state.todos
-    .filter(t => !isTodoDone(t) && t.id !== main.id)
+    .filter(t => !isTodoDone(t) && !mainIds.has(t.id))
     .sort((a,b) => scoreOf(b) - scoreOf(a))
     .slice(0,2);
   if(rest.length) body += '\n\nAfter that: ' + rest.map(t => t.text).join(' \u00b7 ');
@@ -1112,7 +1141,12 @@ function fireReminderNotification(slot){
   if(Notification.permission !== 'granted') return;
   const main = mainTaskNow();
   slot = slot || NUDGE_SLOTS[0];
-  const title = main ? slot.prefix + main.text : 'Signal Deck \u00b7 all clear';
+  const mains = mainTasksNow();
+  // Notification titles get truncated on most lock screens, so lead with one
+  // task and count the rest. The full list is in the body.
+  const title = mains.length
+    ? slot.prefix + mains[0].text + (mains.length > 1 ? ` (+${mains.length - 1} more)` : '')
+    : 'Signal Deck \u00b7 all clear';
   const n = new Notification(title, {
     body: nudgeBody(),
     requireInteraction: slot.offset > 0,
