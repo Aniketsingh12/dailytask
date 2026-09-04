@@ -282,13 +282,39 @@
   }
   input[type=time]:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(0,132,255,0.12);outline:none}
 
+  /* ---------- subtasks ---------- */
+  .subs{margin-top:16px;padding-top:14px;border-top:1px solid var(--stroke-soft)}
+  .subs-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .subs-head span:first-child{
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;
+    text-transform:uppercase;color:var(--ink-3);font-weight:600;
+  }
+  .subs-count{font-family:'Fustat',sans-serif;font-size:13px;font-weight:700;color:var(--brand)}
+  .subs-bar{height:4px;border-radius:4px;background:rgba(0,0,0,0.07);overflow:hidden;margin-bottom:12px}
+  .subs-fill{height:100%;border-radius:4px;background:var(--brand);transition:width .3s ease}
+  .sub-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+  .sub-item{
+    display:flex;align-items:flex-start;gap:10px;cursor:pointer;
+    padding:6px 8px;margin-left:-8px;border-radius:8px;
+    font-size:13px;line-height:1.4;color:var(--ink-2);
+    transition:background .15s ease, color .15s ease;
+  }
+  .sub-item:hover{background:rgba(0,132,255,0.06);color:var(--ink)}
+  .sub-box{
+    width:16px;height:16px;flex-shrink:0;margin-top:1px;border-radius:5px;
+    border:1.5px solid rgba(0,0,0,0.18);background:#fff;
+    display:grid;place-items:center;font-size:10px;color:#fff;
+  }
+  .sub-done{color:var(--ink-3)}
+  .sub-done .sub-text{text-decoration:line-through}
+  .sub-done .sub-box{background:var(--brand);border-color:transparent}
+
   /* ---------- tiers & accountability ---------- */
   .chip-tier{text-transform:uppercase;letter-spacing:0.08em;font-size:9.5px;font-weight:600}
   .tier-core .chip-tier{color:#c4213c;border-color:rgba(255,59,92,0.45);background:rgba(255,59,92,0.08)}
   .tier-important .chip-tier{color:#a35800;border-color:rgba(255,128,30,0.45);background:rgba(255,128,30,0.08)}
   .tier-regular .chip-tier{color:var(--ink-3)}
   .chip-slip{color:#a35800;border-color:rgba(255,128,30,0.4);background:rgba(255,128,30,0.07)}
-  .chip-streak{color:#0f7a4a;border-color:rgba(18,183,106,0.45);background:rgba(18,183,106,0.09);font-weight:600}
 
   /* core tasks carry a heavier left rail so they read as non-negotiable */
   .task.tier-core{border-left-width:4px}
@@ -416,7 +442,7 @@
           <div>
             <p class="prog-text" id="progText"></p>
             <div class="mini-stats">
-              <span><b id="streakVal">0</b> best streak</span>
+              <span><b id="criticalVal">0</b> critical</span>
               <span><b id="debtVal">0</b> days behind</span>
             </div>
           </div>
@@ -444,10 +470,10 @@ let state = {
   goals: [
     {id:'g3', name:'Freelance & social profiles', importance:5},
     {id:'g2', name:'Resume', importance:4},
-    {id:'g7', name:'Side business (Gumroad/Etsy)', importance:5},
-    {id:'g8', name:'AI automation', importance:5},
-    {id:'g4', name:'Build the game (PC/mobile)', importance:4},
-    {id:'g5', name:'Learn MCP', importance:2},
+    {id:'g8', name:'AI automation & n8n', importance:5},
+    {id:'g9', name:'3D web (Three.js/R3F)', importance:2},
+    {id:'g11', name:'Ship & publish', importance:3},
+    {id:'g4', name:'Build the game (PC/mobile)', importance:5},
     {id:'g6', name:'Reading', importance:2},
     {id:'g1', name:'Deploy project to Railway', importance:5},
   ],
@@ -456,10 +482,56 @@ let state = {
     {id:'t2', text:'Update portfolio site', goalId:'g2', category:'Portfolio', due:null, done:true, cal:false, email:false, daily:false},
     {id:'t4', text:'Make profiles on all freelance sites and social media', goalId:'g3', category:'Freelance', due:null, done:true, cal:false, email:false, daily:false},
     {id:'t3', text:'Update resume', goalId:'g2', category:'Resume', due:null, done:true, cal:false, email:false, daily:false},
-    {id:'t8', text:'Start working on Gumroad and Etsy side business', goalId:'g7', category:'Side business', due:null, done:false, cal:true, email:false, daily:true},
-    {id:'t9', text:'Work on AI automation', goalId:'g8', category:'AI automation', due:null, done:false, cal:true, email:false, daily:true},
-    {id:'t5', text:'Build the game', goalId:'g4', category:'Game dev', due:null, done:false, cal:true, email:false, daily:true},
-    {id:'t6', text:'Learn MCP', goalId:'g5', category:'Learning', due:null, done:false, cal:true, email:false, daily:true},
+    {id:'t9', text:'30-day sprint: n8n \u2192 custom node \u2192 MCP \u2192 plugin', goalId:'g8', category:'Sprint', due:null, done:false, cal:true, email:false, daily:true, subtasks:[
+      {id:'d01', text:'D1 \u00b7 Phase 0: n8n on npm + Docker, ngrok webhook 200, Ollama local, all accounts', done:false},
+      {id:'d02', text:'D2 \u00b7 Items, triggers, expressions, HTTP node w/ cursor pagination \u2192 repo 1', done:false},
+      {id:'d03', text:'D3 \u00b7 Branching, resumable batching, error workflow, subworkflows \u2192 repo 2', done:false},
+      {id:'d04', text:'D4-5 \u00b7 AI workflow vs agent + tool calling measured over 30 queries', done:false},
+      {id:'d05', text:'D6 \u00b7 RAG in n8n (Ollama embeddings, cited answers, no dupe vectors)', done:false},
+      {id:'d06', text:'D7 \u00b7 Multi-agent: orchestrator, evaluator loop, human-in-the-loop \u2192 repo 3', done:false},
+      {id:'d07', text:'D8 \u00b7 PROMPT EVAL 1: triage prompt x3 versions x50 emails, keep the table', done:false},
+      {id:'d08', text:'D9 \u00b7 VPS deploy: compose, TLS, queue mode, encryption key backed up', done:false},
+      {id:'d09', text:'D10 \u00b7 HMAC webhook, secrets, cost digest workflow \u2192 repo n8n-deploy', done:false},
+      {id:'d10', text:'D11-13 \u00b7 Declarative custom node: resource/operation, loadOptions, credential test', done:false},
+      {id:'d11', text:'D14-16 \u00b7 Programmatic + trigger node, pairedItem correct on every item', done:false},
+      {id:'d12', text:'D17 \u00b7 Version, Jest tests, lint, PUBLISH npm n8n-nodes-<name>  [criterion 1]', done:false},
+      {id:'d13', text:'D18 \u00b7 Audit MCP Forge, migrate templates to spec 2026-07-28 / SDK v2', done:false},
+      {id:'d14', text:'D19-21 \u00b7 Remote MCP server: streamable HTTP, OAuth 2.1, per-user scoping, deployed  [criterion 2]', done:false},
+      {id:'d15', text:'D22 \u00b7 PROMPT EVAL 2: 40-case tool-selection harness, rewrite, report delta  [criterion 6]', done:false},
+      {id:'d16', text:'D23 \u00b7 Bridge: MCP Client Tool in n8n + expose a workflow via MCP Server Trigger', done:false},
+      {id:'d17', text:'D24-25 \u00b7 Three skills + plugin marketplace repo, submitted  [criterion 3]', done:false},
+      {id:'d18', text:'D26-28 \u00b7 Capstone: Agentic Operations Platform wiring it all together', done:false},
+      {id:'d19', text:'D29 \u00b7 Load test, cost-per-run number, architecture diagram, READMEs everywhere', done:false},
+      {id:'d20', text:'D30 \u00b7 60-second demo video (8 structured shots) + scoping/pricing page, then sell it', done:false}
+    ]},
+    {id:'t10', text:'3D lane: Three.js \u2192 R3F \u2192 performance', goalId:'g9', category:'3D web', due:null, done:false, cal:true, email:false, daily:true, subtasks:[
+      {id:'d1', text:'Stage A: Three.js Journey - scene, geometries, materials, textures, lights', done:false},
+      {id:'d2', text:'Checkpoint A: deployed GLTF scene, orbit controls, colour management, 60fps on phone', done:false},
+      {id:'d3', text:'Stage B: GLSL - vertex vs fragment, uniforms, attributes, varyings, noise', done:false},
+      {id:'d4', text:'Stage B: R3F - drei, useFrame, useLoader, Suspense, Environment, Rapier', done:false},
+      {id:'d5', text:'Checkpoint B: custom shader driven by mouse + time, as a reusable R3F component', done:false},
+      {id:'d6', text:'Stage C: instancing, LOD, frustum culling, KTX2/Draco, baked lighting', done:false},
+      {id:'d7', text:'Checkpoint C: 3D site >85 Lighthouse on mid-range Android over 4G', done:false}
+    ]},
+    {id:'t12', text:'Ship it: README + one technical post', goalId:'g11', category:'Publishing', due:null, done:false, cal:false, email:false, daily:true, subtasks:[
+      {id:'c1', text:'Published npm community node with 1+ external install', done:false},
+      {id:'c2', text:'Deployed remote MCP server with OAuth a second person has connected to', done:false},
+      {id:'c3', text:'Public Claude plugin marketplace with 3+ skills', done:false},
+      {id:'c4', text:'n8n on your own domain: queue mode, error handling, cost reporting', done:false},
+      {id:'c5', text:'3D site scoring >85 Lighthouse on mid-range mobile', done:false},
+      {id:'c6', text:'Two before/after prompt evaluations with real numbers', done:false},
+      {id:'c7', text:'Ten repos with real READMEs and a demo video each', done:false}
+    ]},
+    {id:'t5', text:'Build the game', goalId:'g4', category:'Game dev', due:null, done:false, cal:true, email:false, daily:true, subtasks:[
+      {id:'s1', text:'Lock concept, genre and scope on one page', done:false},
+      {id:'s2', text:'Prototype the core mechanic (ugly is fine)', done:false},
+      {id:'s3', text:'Greybox level 1', done:false},
+      {id:'s4', text:'Player controls and game-feel pass', done:false},
+      {id:'s5', text:'Art pass: character + environment', done:false},
+      {id:'s6', text:'Sound and music pass', done:false},
+      {id:'s7', text:'Vertical slice + playtest with 5 people', done:false},
+      {id:'s8', text:'Package a PC/mobile build and ship it', done:false}
+    ]},
     {id:'t7', text:'Reading', goalId:'g6', category:'Reading', due:null, done:false, cal:true, email:false, daily:true},
   ],
   sort:'score',
@@ -495,7 +567,7 @@ function scheduleSave(){
 // Your saved localStorage copy wins over the defaults above, so edits made to
 // this file would never reach a browser that's already been used. Bumping
 // DATA_VERSION and adding a migration makes the change apply once, on next load.
-const DATA_VERSION = 5;
+const DATA_VERSION = 8;
 
 const MIGRATIONS = {
   // v2 — resume is finished, so it stops being a daily task.
@@ -520,7 +592,131 @@ const MIGRATIONS = {
   },
   // v5 — daily tasks had been counting every unopened day since they were
   // created, so everything showed critical at once. Reset the clock to today.
-  5: (st)=>{ rebaseDailies(st); }
+  5: (st)=>{ rebaseDailies(st); },
+  // v6 — Gumroad/Etsy dropped. Game dev becomes core work and gets broken into
+  // milestones. Streak history removed; it was per-device and easy to lose,
+  // so it was never trustworthy enough to motivate anything.
+  6: (st)=>{
+    st.todos = st.todos.filter(t => t.id !== 't8');
+    st.goals = st.goals.filter(g => g.id !== 'g7');
+    const g4 = st.goals.find(g => g.id === 'g4');
+    if(g4) g4.importance = 5;
+    const game = st.todos.find(t => t.id === 't5');
+    if(game && !Array.isArray(game.subtasks)) game.subtasks = [
+      {id:'s1', text:'Lock concept, genre and scope on one page', done:false},
+      {id:'s2', text:'Prototype the core mechanic (ugly is fine)', done:false},
+      {id:'s3', text:'Greybox level 1', done:false},
+      {id:'s4', text:'Player controls and game-feel pass', done:false},
+      {id:'s5', text:'Art pass: character + environment', done:false},
+      {id:'s6', text:'Sound and music pass', done:false},
+      {id:'s7', text:'Vertical slice + playtest with 5 people', done:false},
+      {id:'s8', text:'Package a PC/mobile build and ship it', done:false}
+    ];
+    st.todos.forEach(t => { delete t.history; });
+  },
+  // v7 — the 14-week automation/AI-engineering course. Its three parallel lanes
+  // become three daily tasks, each week becomes a milestone. "Learn MCP" folds
+  // into the main lane, where the course puts it (weeks 7-8).
+  7: (st)=>{
+    st.todos = st.todos.filter(t => t.id !== 't6');
+    st.goals = st.goals.filter(g => g.id !== 'g5');
+
+    const g8 = st.goals.find(g => g.id === 'g8');
+    if(g8){ g8.name = 'AI automation & n8n'; g8.importance = 5; }
+    if(!st.goals.some(g => g.id === 'g9'))  st.goals.push({id:'g9',  name:'3D web (Three.js/R3F)', importance:4});
+    if(!st.goals.some(g => g.id === 'g10')) st.goals.push({id:'g10', name:'Prompt engineering', importance:3});
+    if(!st.goals.some(g => g.id === 'g11')) st.goals.push({id:'g11', name:'Ship & publish', importance:3});
+
+    const main = st.todos.find(t => t.id === 't9');
+    if(main){
+      main.text = 'Main lane: n8n \u2192 custom nodes \u2192 MCP \u2192 plugins';
+      main.category = 'Automation';
+      if(!Array.isArray(main.subtasks)) main.subtasks = [
+      {id:'m0', text:'Phase 0: n8n on npm + Docker, ngrok webhook returns 200, Ollama answering locally', done:false},
+      {id:'m1', text:'Week 1: items/triggers/expressions/HTTP node -> repo n8n-fundamentals', done:false},
+      {id:'m2', text:'Week 2: branching, batching, error handling, subworkflows -> repo n8n-control-flow', done:false},
+      {id:'m3', text:'Week 3: AI workflow vs agent, tool calling, RAG, multi-agent -> repo n8n-ai-patterns', done:false},
+      {id:'m4', text:'Week 4: VPS deploy, TLS, queue mode, HMAC webhook, cost digest -> repo n8n-deploy', done:false},
+      {id:'m5', text:'Weeks 5-6: declarative node, then programmatic + trigger node', done:false},
+      {id:'m6', text:'Weeks 5-6: version, test, publish npm package n8n-nodes-<name>', done:false},
+      {id:'m7', text:'Weeks 7-8: audit MCP Forge, migrate templates to spec 2026-07-28 / SDK v2', done:false},
+      {id:'m8', text:'Weeks 7-8: remote MCP server, OAuth 2.1, per-user scoping, deployed', done:false},
+      {id:'m9', text:'Weeks 7-8: 40-case eval harness, rewrite tool descriptions, report the delta', done:false},
+      {id:'m10', text:'Week 9: three skills + plugin marketplace repo, submitted', done:false},
+      {id:'m11', text:'Weeks 10-11: capstone Agentic Operations Platform', done:false},
+      {id:'m12', text:'Capstone docs: architecture diagram, demo video, load test, cost-per-run, scoping page', done:false}
+    ];
+    }
+
+    const add = (t)=>{ if(!st.todos.some(x => x.id === t.id)) st.todos.push(t); };
+    add({id:'t10', text:'3D lane: Three.js \u2192 R3F \u2192 performance', goalId:'g9', category:'3D web', due:null, done:false, cal:true, email:false, daily:true, createdDate:todayStr(), lastDoneDate:null, subtasks:[
+      {id:'d1', text:'Stage A: Three.js Journey - scene, geometries, materials, textures, lights', done:false},
+      {id:'d2', text:'Checkpoint A: deployed GLTF scene, orbit controls, colour management, 60fps on phone', done:false},
+      {id:'d3', text:'Stage B: GLSL - vertex vs fragment, uniforms, attributes, varyings, noise', done:false},
+      {id:'d4', text:'Stage B: R3F - drei, useFrame, useLoader, Suspense, Environment, Rapier', done:false},
+      {id:'d5', text:'Checkpoint B: custom shader driven by mouse + time, as a reusable R3F component', done:false},
+      {id:'d6', text:'Stage C: instancing, LOD, frustum culling, KTX2/Draco, baked lighting', done:false},
+      {id:'d7', text:'Checkpoint C: 3D site >85 Lighthouse on mid-range Android over 4G', done:false}
+    ]});
+    add({id:'t11', text:'Prompting lane: measured, inside the builds', goalId:'g10', category:'Prompting', due:null, done:false, cal:false, email:false, daily:true, createdDate:todayStr(), lastDoneDate:null, subtasks:[
+      {id:'p1', text:'P1: context engineering - spec-first, decomposition, structured output, negative space', done:false},
+      {id:'p2', text:'P1 exercise: 3 versions of the triage prompt x 50 emails, record accuracy + cost', done:false},
+      {id:'p3', text:'P2: code-gen - version pinning, one component per request, paste the real docs', done:false},
+      {id:'p4', text:'P2 exercise: same R3F scene twice, free vs constrained, count iterations', done:false},
+      {id:'p5', text:'P3: tool descriptions, response budgeting, agent system prompts, rubric critics', done:false},
+      {id:'p6', text:'P3 exercise: 40-case eval harness, rewrite, re-measure, publish the delta', done:false},
+      {id:'p7', text:'P4: 3D prompting - renderer target, scene graph, asset pipeline, cleanup contract', done:false},
+      {id:'p8', text:'P5: video - six-slot frame, cinematography vocabulary, explicit audio', done:false},
+      {id:'p9', text:'P5 exercise: 60-second capstone video, 8 storyboarded shots', done:false}
+    ]});
+    add({id:'t12', text:'Ship it: README + one technical post', goalId:'g11', category:'Publishing', due:null, done:false, cal:false, email:false, daily:true, createdDate:todayStr(), lastDoneDate:null, subtasks:[
+      {id:'c1', text:'Published npm community node with 1+ external install', done:false},
+      {id:'c2', text:'Deployed remote MCP server with OAuth a second person has connected to', done:false},
+      {id:'c3', text:'Public Claude plugin marketplace with 3+ skills', done:false},
+      {id:'c4', text:'n8n on your own domain: queue mode, error handling, cost reporting', done:false},
+      {id:'c5', text:'3D site scoring >85 Lighthouse on mid-range mobile', done:false},
+      {id:'c6', text:'Two before/after prompt evaluations with real numbers', done:false},
+      {id:'c7', text:'Ten repos with real READMEs and a demo video each', done:false}
+    ]});
+  },
+  // v8 — compressed from the course's 14 weeks into a 30-day sprint. The 3D lane
+  // is parked (it can't compress: Three.js Journey alone is 116h of video) and
+  // the prompting lane folds into the sprint, where its two evals actually live.
+  8: (st)=>{
+    st.todos = st.todos.filter(t => t.id !== 't11');
+    st.goals = st.goals.filter(g => g.id !== 'g10');
+    const g9 = st.goals.find(g => g.id === 'g9');
+    if(g9) g9.importance = 2;
+    const main = st.todos.find(t => t.id === 't9');
+    if(main){
+      main.text = '30-day sprint: n8n \u2192 custom node \u2192 MCP \u2192 plugin';
+      main.category = 'Sprint';
+      main.subtasks = [
+      {id:'d01', text:'D1 \u00b7 Phase 0: n8n on npm + Docker, ngrok webhook 200, Ollama local, all accounts', done:false},
+      {id:'d02', text:'D2 \u00b7 Items, triggers, expressions, HTTP node w/ cursor pagination \u2192 repo 1', done:false},
+      {id:'d03', text:'D3 \u00b7 Branching, resumable batching, error workflow, subworkflows \u2192 repo 2', done:false},
+      {id:'d04', text:'D4-5 \u00b7 AI workflow vs agent + tool calling measured over 30 queries', done:false},
+      {id:'d05', text:'D6 \u00b7 RAG in n8n (Ollama embeddings, cited answers, no dupe vectors)', done:false},
+      {id:'d06', text:'D7 \u00b7 Multi-agent: orchestrator, evaluator loop, human-in-the-loop \u2192 repo 3', done:false},
+      {id:'d07', text:'D8 \u00b7 PROMPT EVAL 1: triage prompt x3 versions x50 emails, keep the table', done:false},
+      {id:'d08', text:'D9 \u00b7 VPS deploy: compose, TLS, queue mode, encryption key backed up', done:false},
+      {id:'d09', text:'D10 \u00b7 HMAC webhook, secrets, cost digest workflow \u2192 repo n8n-deploy', done:false},
+      {id:'d10', text:'D11-13 \u00b7 Declarative custom node: resource/operation, loadOptions, credential test', done:false},
+      {id:'d11', text:'D14-16 \u00b7 Programmatic + trigger node, pairedItem correct on every item', done:false},
+      {id:'d12', text:'D17 \u00b7 Version, Jest tests, lint, PUBLISH npm n8n-nodes-<name>  [criterion 1]', done:false},
+      {id:'d13', text:'D18 \u00b7 Audit MCP Forge, migrate templates to spec 2026-07-28 / SDK v2', done:false},
+      {id:'d14', text:'D19-21 \u00b7 Remote MCP server: streamable HTTP, OAuth 2.1, per-user scoping, deployed  [criterion 2]', done:false},
+      {id:'d15', text:'D22 \u00b7 PROMPT EVAL 2: 40-case tool-selection harness, rewrite, report delta  [criterion 6]', done:false},
+      {id:'d16', text:'D23 \u00b7 Bridge: MCP Client Tool in n8n + expose a workflow via MCP Server Trigger', done:false},
+      {id:'d17', text:'D24-25 \u00b7 Three skills + plugin marketplace repo, submitted  [criterion 3]', done:false},
+      {id:'d18', text:'D26-28 \u00b7 Capstone: Agentic Operations Platform wiring it all together', done:false},
+      {id:'d19', text:'D29 \u00b7 Load test, cost-per-run number, architecture diagram, READMEs everywhere', done:false},
+      {id:'d20', text:'D30 \u00b7 60-second demo video (8 structured shots) + scoping/pricing page, then sell it', done:false}
+    ];
+    }
+    const three = st.todos.find(t => t.id === 't10');
+    if(three) three.text = '3D lane (parked until the sprint ships)';
+  }
 };
 
 function loadState(){
@@ -678,27 +874,8 @@ function urgencyForDaily(t){
 // ---- Streaks & accountability ----
 // Completion history per daily task powers streaks, which are the carrot;
 // missed-day debt is the stick.
-function markDailyDone(t){
-  t.lastDoneDate = todayStr();
-  if(!Array.isArray(t.history)) t.history = [];
-  if(!t.history.includes(todayStr())) t.history.push(todayStr());
-}
-
-function unmarkDailyDone(t){
-  t.lastDoneDate = null;
-  if(Array.isArray(t.history)) t.history = t.history.filter(d => d !== todayStr());
-}
-
-function currentStreak(t){
-  if(!Array.isArray(t.history) || !t.history.length) return 0;
-  const seen = new Set(t.history);
-  const d = new Date();
-  // Today not done yet doesn't break a streak — count back from yesterday.
-  if(!seen.has(d.toDateString())) d.setDate(d.getDate() - 1);
-  let streak = 0;
-  while(seen.has(d.toDateString())){ streak++; d.setDate(d.getDate() - 1); }
-  return streak;
-}
+function markDailyDone(t){ t.lastDoneDate = todayStr(); }
+function unmarkDailyDone(t){ t.lastDoneDate = null; }
 
 function todayProgress(){
   const daily = state.todos.filter(t => t.daily);
@@ -712,13 +889,17 @@ function missedDebt(){
     .reduce((sum, t) => sum + dailyMissedStreak(t), 0);
 }
 
-function longestStreak(){
-  const streaks = state.todos.filter(t => t.daily).map(currentStreak);
-  return streaks.length ? Math.max(...streaks) : 0;
-}
-
 // Everything in the top ("core") tier counts as a main task. If nothing is
 // core, the single highest-scoring task is promoted so there's always one focus.
+// Big tasks carry a milestone checklist. Progress on it is what "doing the
+// work" actually looks like day to day.
+function subProgress(t){
+  if(!Array.isArray(t.subtasks) || !t.subtasks.length) return null;
+  const done = t.subtasks.filter(s => s.done).length;
+  const next = (t.subtasks.find(s => !s.done) || {}).text || '';
+  return {done, total: t.subtasks.length, next};
+}
+
 function mainTasksNow(){
   const open = state.todos.filter(t => !isTodoDone(t));
   if(!open.length) return [];
@@ -784,8 +965,7 @@ function buildTodoEl(t, featured){
   const overdue = !done && !t.daily && isOverdue(t.due);
   const dueToday = !done && !t.daily && isDueToday(t.due);
   const critical = !done && isCritical(t);
-  const streak = t.daily ? currentStreak(t) : 0;
-  const streakTxt = streak >= 2 ? `${streak}-day streak` : '';
+  const sub = subProgress(t);
 
   const el = document.createElement('div');
   el.className = 'card task'
@@ -807,7 +987,6 @@ function buildTodoEl(t, featured){
         <span class="chip chip-tier">${tierOf(t).label}</span>
         ${critical ? `<span class="chip chip-critical">critical \u00b7 ${tierOf(t).days}+ days behind</span>` : ''}
         ${!critical && isSlipping(t) ? '<span class="chip chip-slip">slipping</span>' : ''}
-        ${streakTxt ? `<span class="chip chip-streak">${streakTxt}</span>` : ''}
         ${overdue ? '<span class="chip chip-late">overdue</span>' : ''}
         ${dueToday ? '<span class="chip chip-today">due today</span>' : ''}
         ${t.daily ? '<span class="chip chip-daily">daily</span>' : ''}
@@ -820,6 +999,21 @@ function buildTodoEl(t, featured){
           : `<span class="chip chip-due"><input type="date" data-due="${t.id}" value="${t.due || ''}">${dueLabel ? ' · ' + dueLabel : ''}</span>`
         }
       </div>
+      ${sub ? `
+        <div class="subs">
+          <div class="subs-head">
+            <span>Milestones</span>
+            <span class="subs-count">${sub.done}/${sub.total}</span>
+          </div>
+          <div class="subs-bar"><div class="subs-fill" style="width:${Math.round(sub.done/sub.total*100)}%"></div></div>
+          <ul class="sub-list">
+            ${t.subtasks.map(st => `
+              <li class="sub-item${st.done ? ' sub-done' : ''}" data-sub="${st.id}">
+                <span class="sub-box">${st.done ? '\u2713' : ''}</span>
+                <span class="sub-text">${st.text}</span>
+              </li>`).join('')}
+          </ul>
+        </div>` : ''}
     </div>
   `;
   return el;
@@ -838,6 +1032,17 @@ function attachCardListeners(el, t){
     state.todos = state.todos.filter(x=>x.id!==t.id);
     scheduleSave(); render();
   });
+  el.querySelectorAll('[data-sub]').forEach(li=>{
+    li.addEventListener('click', ()=>{
+      const st = (t.subtasks || []).find(x => x.id === li.dataset.sub);
+      if(!st) return;
+      st.done = !st.done;
+      // Ticking a milestone counts as working on it today.
+      if(st.done && t.daily) markDailyDone(t);
+      scheduleSave(); render();
+    });
+  });
+
   const dueInp = el.querySelector('[data-due]');
   if(dueInp){
     dueInp.addEventListener('change', e=>{
@@ -849,11 +1054,11 @@ function attachCardListeners(el, t){
 
 function stakesFor(t){
   const missed = t.daily ? dailyMissedStreak(t) : 0;
-  const streak = t.daily ? currentStreak(t) : 0;
   const tier = tierOf(t);
   if(missed >= tier.days) return `<b>${missed} days behind.</b> Past its ${tier.label} limit \u2014 clear it before anything else.`;
   if(missed > 0) return `<b>Skipped ${missed} day${missed===1?'':'s'}.</b> ${tier.days - missed} more and it goes critical.`;
-  if(streak >= 2) return `<b>${streak}-day streak.</b> Do it today and it keeps running.`;
+  const sub = subProgress(t);
+  if(sub && sub.done < sub.total) return `<b>Step ${sub.done + 1} of ${sub.total}:</b> ${sub.next}`;
   return 'Start here. Everything else waits.';
 }
 
@@ -942,7 +1147,6 @@ function ensureDailyDefaults(){
     if(!t.daily) return;
     if(t.createdDate === undefined) t.createdDate = todayStr();
     if(t.lastDoneDate === undefined) t.lastDoneDate = null;
-    if(!Array.isArray(t.history)) t.history = t.lastDoneDate ? [t.lastDoneDate] : [];
   });
 }
 
@@ -958,7 +1162,7 @@ function renderGreeting(){
 function renderAccountability(){
   const prog = todayProgress();
   const debt = missedDebt();
-  const best = longestStreak();
+  const criticalCount = state.todos.filter(t => !isTodoDone(t) && isCritical(t)).length;
   const ring = document.getElementById('progRing');
   ring.style.setProperty('--pct', prog.pct);
   ring.dataset.pct = prog.pct + '%';
@@ -967,6 +1171,7 @@ function renderAccountability(){
   const verdictEl = document.getElementById('verdict');
   let verdict, tone;
   if(prog.total && prog.done === prog.total){ verdict = 'Full clear today. This is the standard now.'; tone = 'good'; }
+  else if(criticalCount){ verdict = `${criticalCount} task${criticalCount===1?'':'s'} past the critical line. Clear those first.`; tone = 'bad'; }
   else if(debt >= 6){ verdict = `${debt} missed days stacked up. Pick the main task and cut the debt.`; tone = 'bad'; }
   else if(debt > 0){ verdict = `${debt} missed day${debt===1?'':'s'} to claw back. Don't let it compound.`; tone = 'warn'; }
   else if(prog.done === 0){ verdict = 'Nothing done yet today. Start with the main task.'; tone = 'warn'; }
@@ -974,7 +1179,7 @@ function renderAccountability(){
   verdictEl.textContent = verdict;
   verdictEl.className = 'verdict ' + tone;
 
-  document.getElementById('streakVal').textContent = best;
+  document.getElementById('criticalVal').textContent = criticalCount;
   document.getElementById('debtVal').textContent = debt;
 }
 
@@ -1138,10 +1343,10 @@ function nudgeBody(){
   if(!mains.length) return 'Everything is done. Take the win.';
   let body = mains.map((t,i)=>{
     const missed = t.daily ? dailyMissedStreak(t) : 0;
-    const streak = t.daily ? currentStreak(t) : 0;
     let line = (mains.length > 1 ? (i+1) + '. ' : '') + t.text;
     if(missed > 0) line += `  \u2014 skipped ${missed} day${missed===1?'':'s'} running`;
-    else if(streak > 1) line += `  \u2014 ${streak}-day streak on the line`;
+    const sub = subProgress(t);
+    if(sub && sub.done < sub.total) line += `\n   next: ${sub.next}`;
     return line;
   }).join('\n');
   const mainIds = new Set(mains.map(t => t.id));
